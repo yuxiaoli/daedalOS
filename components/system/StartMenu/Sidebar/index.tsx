@@ -15,7 +15,7 @@ import StyledSidebar from "components/system/StartMenu/Sidebar/StyledSidebar";
 import { useFileSystem } from "contexts/fileSystem";
 import { useProcesses } from "contexts/process";
 import { useSession } from "contexts/session";
-import { HOME, TASKBAR_HEIGHT } from "utils/constants";
+import { HOME, ICON_PATH, TASKBAR_HEIGHT } from "utils/constants";
 import { haltEvent, viewHeight } from "utils/functions";
 
 type SidebarGroupProps = {
@@ -79,7 +79,7 @@ const Sidebar: FC<SidebarProps> = ({ height }) => {
                 open(
                   "FileExplorer",
                   { url: `${HOME}/Documents` },
-                  "/System/Icons/documents.webp"
+                  `${ICON_PATH}/documents.webp`
                 ),
               icon: <Documents />,
               name: "Documents",
@@ -92,7 +92,7 @@ const Sidebar: FC<SidebarProps> = ({ height }) => {
                 open(
                   "FileExplorer",
                   { url: `${HOME}/Pictures` },
-                  "/System/Icons/pictures.webp"
+                  `${ICON_PATH}/pictures.webp`
                 ),
               icon: <Pictures />,
               name: "Pictures",
@@ -105,7 +105,7 @@ const Sidebar: FC<SidebarProps> = ({ height }) => {
                 open(
                   "FileExplorer",
                   { url: `${HOME}/Videos` },
-                  "/System/Icons/videos.webp"
+                  `${ICON_PATH}/videos.webp`
                 ),
               icon: <Videos />,
               name: "Videos",

@@ -84,7 +84,12 @@ const Paint: FC<ComponentProcessProps> = ({ id }) => {
 
     if (loaded && contentWindow && !jsPaintInstance) {
       const jsPaint = contentWindow as unknown as JsPaint;
-      const previousOpenFileDialog = jsPaint.systemHooks.showOpenFileDialog;
+
+      if (!jsPaint.systemHooks) {
+        jsPaint.systemHooks = {} as JsPaint["systemHooks"];
+      }
+
+      const previousOpenFileDialog = jsPaint.systemHooks?.showOpenFileDialog;
       const previousFileNew = jsPaint.file_new;
 
       setJsPaintInstance(jsPaint);
@@ -97,11 +102,14 @@ const Paint: FC<ComponentProcessProps> = ({ id }) => {
       jsPaint.systemHooks.setWallpaperCentered =
         setWallpaperFromCanvas("center");
       jsPaint.systemHooks.showOpenFileDialog = async (props) => {
-        const { file } = await previousOpenFileDialog(props);
+        if (previousOpenFileDialog) {
+          const { file } = await previousOpenFileDialog(props);
 
-        prependFileToTitle(file.name);
+          prependFileToTitle(file.name);
 
-        return { file };
+          return { file };
+        }
+        return { file: new File([], "") };
       };
       jsPaint.close = () => closeWithTransition(id);
       jsPaint.storage_quota_exceeded = () => {

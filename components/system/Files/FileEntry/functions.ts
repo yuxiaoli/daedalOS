@@ -12,6 +12,7 @@ import processDirectory from "contexts/process/directory";
 import {
   AUDIO_FILE_EXTENSIONS,
   BASE_2D_CONTEXT_OPTIONS,
+  BASE_PATH,
   DECODED_VIDEO_FILE_EXTENSIONS,
   DEFAULT_LOCALE,
   DYNAMIC_EXTENSION,
@@ -24,6 +25,7 @@ import {
   ICON_CACHE_EXTENSION,
   ICON_GIF_FPS,
   ICON_GIF_SECONDS,
+  ICON_PATH,
   IMAGE_FILE_EXTENSIONS,
   MAX_ICON_SIZE,
   MAX_THUMBNAIL_FILE_SIZE,
@@ -113,7 +115,9 @@ export const getIconFromIni = (
               ShellClassInfo: { IconFile = "" },
             } = ini.parse(contents.toString()) as ShellClassInfo;
 
-            resolve(IconFile);
+            resolve(
+              IconFile.startsWith("/") ? `${BASE_PATH}${IconFile}` : IconFile
+            );
           }
         });
       }
@@ -134,7 +138,7 @@ export const getIconByFileExtension = (extension: string): string => {
   const { icon: extensionIcon = "", process: [defaultProcess = ""] = [] } =
     extension in extensions ? extensions[extension] : {};
 
-  if (extensionIcon) return `/System/Icons/${extensionIcon}.webp`;
+  if (extensionIcon) return `${ICON_PATH}/${extensionIcon}.webp`;
 
   return (
     processDirectory[defaultProcess || getDefaultFileViewer(extension)]?.icon ||
@@ -171,7 +175,7 @@ export const getShortcutInfo = (
 
   return {
     comment,
-    icon,
+    icon: icon.startsWith("/") ? `${BASE_PATH}${icon}` : icon,
     pid,
     type,
     url,
@@ -397,6 +401,7 @@ export const getInfoWithExtension = (
           comment,
           icon,
           pid,
+          subIcons: _shortcutSubIcons = [],
           url,
         }: FileInfo): void => {
           const urlExt = getExtension(url);
@@ -448,7 +453,7 @@ export const getInfoWithExtension = (
                 if (isExistingFile(cachedIconStats)) {
                   callback({
                     comment,
-                    icon: cachedIconPath,
+                    icon: `${BASE_PATH}${cachedIconPath}`,
                     pid,
                     subIcons,
                     url,
@@ -514,7 +519,7 @@ export const getInfoWithExtension = (
                       callback({
                         ...baseFileInfo,
                         icon: cachedIconExists
-                          ? cachedIconPath
+                          ? `${BASE_PATH}${cachedIconPath}`
                           : `https://i.ytimg.com/vi/${ytId}/mqdefault.jpg`,
                         subIcons: videoSubIcons,
                       })
@@ -560,7 +565,7 @@ export const getInfoWithExtension = (
       }
       break;
     case ".exe":
-      getInfoByFileExtension("/System/Icons/executable.webp", (signal) =>
+      getInfoByFileExtension(`${ICON_PATH}/executable.webp`, (signal) =>
         fs.readFile(path, async (error, contents = Buffer.from("")) => {
           if (!error && contents.length > 0 && !signal.aborted) {
             const { extractExeIcon } = await import(
@@ -580,7 +585,7 @@ export const getInfoWithExtension = (
     case ".mp3":
       getInfoByFileExtension(
         extension === ".mp3"
-          ? `/System/Icons/${extensions[".mp3"].icon as string}.webp`
+          ? `${ICON_PATH}/${extensions[".mp3"].icon as string}.webp`
           : undefined,
         (signal) =>
           fs.readFile(path, (error, contents = Buffer.from("")) => {
@@ -604,7 +609,7 @@ export const getInfoWithExtension = (
       decodeImage();
       break;
     case ".whtml":
-      getInfoByFileExtension("/System/Icons/tinymce.webp", (signal) =>
+      getInfoByFileExtension(`${ICON_PATH}/tinymce.webp`, (signal) =>
         fs.readFile(path, async (error, contents = Buffer.from("")) => {
           if (!error && contents.length > 0 && !signal.aborted) {
             const htmlToImage = await getHtmlToImage();

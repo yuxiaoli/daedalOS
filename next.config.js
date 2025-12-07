@@ -26,6 +26,11 @@ const nextConfig = {
     },
   },
   devIndicators: false,
+  basePath: isProduction ? "/daedalOS" : "",
+  assetPrefix: isProduction ? "/daedalOS/" : "",
+  env: {
+    BASE_PATH: isProduction ? "/daedalOS" : "",
+  },
   headers: async () => [
     {
       source: "/:path*",

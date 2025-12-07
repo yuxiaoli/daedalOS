@@ -1,5 +1,13 @@
 import { basename, join } from "path";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEventHandler,
+} from "react";
 import dynamic from "next/dynamic";
 import StyledLoading from "components/system/Apps/StyledLoading";
 import StatusBar from "components/system/Files/FileManager/StatusBar";
@@ -45,11 +53,13 @@ type FileManagerProps = {
   isDesktop?: boolean;
   isStartMenu?: boolean;
   loadIconsImmediately?: boolean;
+  onKeyDown?: KeyboardEventHandler<HTMLElement>;
   readOnly?: boolean;
   showStatusBar?: boolean;
   skipFsWatcher?: boolean;
   skipSorting?: boolean;
   url: string;
+  view?: FileManagerViewNames;
 };
 
 const DEFAULT_VIEW = "icon";
@@ -64,19 +74,22 @@ const FileManager: FC<FileManagerProps> = ({
   isDesktop,
   isStartMenu,
   loadIconsImmediately,
+  onKeyDown,
   readOnly,
   showStatusBar,
   skipFsWatcher,
   skipSorting,
   url,
+  view: viewProp,
 }) => {
   const { views, setViews } = useSession();
   const view = useMemo(() => {
+    if (viewProp) return viewProp;
     if (isDesktop) return "icon";
     if (isStartMenu) return "list";
 
     return views[url] || DEFAULT_VIEW;
-  }, [isDesktop, isStartMenu, url, views]);
+  }, [isDesktop, isStartMenu, url, viewProp, views]);
   const isDetailsView = useMemo(() => view === "details", [view]);
   const [columns, setColumns] = useState<ColumnsObject | undefined>(() =>
     isDetailsView ? DEFAULT_COLUMNS : undefined
@@ -151,7 +164,7 @@ const FileManager: FC<FileManagerProps> = ({
   const [permission, setPermission] = useState<PermissionState>("prompt");
   const requestingPermissions = useRef(false);
   const focusedOnLoad = useRef(false);
-  const onKeyDown = useMemo(
+  const folderKeyDown = useMemo(
     () => (renaming === "" ? keyShortcuts() : undefined),
     [keyShortcuts, renaming]
   );
@@ -240,7 +253,14 @@ const FileManager: FC<FileManagerProps> = ({
         ref={fileManagerRef}
         $isEmptyFolder={isEmptyFolder}
         $scrollable={!hideScrolling}
-        onKeyDownCapture={loading ? undefined : onKeyDown}
+        onKeyDownCapture={
+          loading
+            ? undefined
+            : (e) => {
+                folderKeyDown?.(e);
+                onKeyDown?.(e);
+              }
+        }
         {...(loading || readOnly
           ? { onContextMenu: haltEvent }
           : {

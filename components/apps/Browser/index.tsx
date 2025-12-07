@@ -33,6 +33,7 @@ import useHistory from "hooks/useHistory";
 import Button from "styles/common/Button";
 import Icon from "styles/common/Icon";
 import {
+  BASE_PATH,
   FAVICON_BASE_PATH,
   IFRAME_CONFIG,
   ONE_TIME_PASSIVE_EVENT,
@@ -336,12 +337,17 @@ const Browser: FC<ComponentProcessProps> = ({ id }) => {
             }
 
             if (addressInput.startsWith("ipfs://")) {
-              setIcon(id, "/System/Icons/Favicons/ipfs.webp");
+              setIcon(id, `${BASE_PATH}/System/Icons/Favicons/ipfs.webp`);
             } else {
               const favicon = new Image();
-              const faviconUrl = `${
-                new URL(addressUrl).origin
-              }${FAVICON_BASE_PATH}`;
+              const { hostname, origin } = new URL(addressUrl);
+              const isLocal =
+                hostname === "localhost" ||
+                hostname === "127.0.0.1" ||
+                hostname === "[::1]";
+              const faviconUrl = isLocal
+                ? `${origin}${FAVICON_BASE_PATH}`
+                : `https://www.google.com/s2/favicons?domain=${hostname}`;
 
               favicon.addEventListener(
                 "error",

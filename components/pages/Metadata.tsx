@@ -5,6 +5,7 @@ import { useProcesses } from "contexts/process";
 import { useSession } from "contexts/session";
 import desktopIcons from "public/.index/desktopIcons.json";
 import {
+  BASE_PATH,
   FAVICON_BASE_PATH,
   HIGH_PRIORITY_ELEMENT,
   ONE_TIME_PASSIVE_EVENT,
@@ -135,7 +136,7 @@ const Metadata: FC = () => {
       <meta content={`${author.url}/screenshot.png`} property="og:image" />
       <meta content={description} property="og:description" />
       <link
-        href={`${author.url}/rss.xml`}
+        href={`${author.url}${BASE_PATH}/rss.xml`}
         rel="alternate"
         title={`RSS Feed for ${alias}`}
         type="application/rss+xml"

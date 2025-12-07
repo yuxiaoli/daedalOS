@@ -3,6 +3,8 @@ import { type Size } from "components/system/Window/RndWindow/useResizable";
 import { type ClockSource, type WallpaperFit } from "contexts/session/types";
 import { type ThemeName } from "styles/themes";
 
+export const BASE_PATH = process.env.BASE_PATH || "";
+
 export const BASE_2D_CONTEXT_OPTIONS: CanvasRenderingContext2DSettings = {
   alpha: false,
   desynchronized: true,
@@ -57,7 +59,7 @@ export const PICTURES_FOLDER = `${HOME}/Pictures`;
 
 export const VIDEOS_FOLDER = `${HOME}/Videos`;
 
-export const INDEX_FILE = "/index.html";
+export const INDEX_FILE = `${BASE_PATH}/index.html`;
 
 export const PROMPT_FILE = "prompts.json";
 
@@ -292,7 +294,7 @@ export const SAVE_TITLE_CHAR = "\u25CF";
 
 export const ROOT_NAME = "My PC";
 
-export const SYSTEM_PATH = "/System";
+export const SYSTEM_PATH = `${BASE_PATH}/System`;
 
 export const ROOT_SHORTCUT = `${ROOT_NAME}.url`;
 
@@ -308,11 +310,11 @@ export const YT_ICON_CACHE = `${ICON_CACHE}/YouTube`;
 
 export const ICON_CACHE_EXTENSION = ".cache";
 
-export const SESSION_FILE = "/session.json";
+export const SESSION_FILE = `${BASE_PATH}/session.json`;
 
 export const SHORTCUT_ICON = `${ICON_PATH}/shortcut.webp`;
 
-export const FAVICON_BASE_PATH = "/favicon.ico";
+export const FAVICON_BASE_PATH = `${BASE_PATH}/favicon.ico`;
 
 export const FOLDER_ICON = `${ICON_PATH}/folder.webp`;
 

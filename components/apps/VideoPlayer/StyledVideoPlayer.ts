@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { ICON_PATH } from "utils/constants";
 
 const CONTROL_BAR_HEIGHT = 30;
 
@@ -188,7 +189,7 @@ const StyledVideoPlayer = styled.div`
     }
 
     video {
-      background-image: url("/System/Icons/48x48/vlc.webp");
+      background-image: url("${ICON_PATH}/48x48/vlc.webp");
       background-position: center calc(50% - 15px);
       background-repeat: no-repeat;
       padding-bottom: ${CONTROL_BAR_HEIGHT}px;
@@ -197,9 +198,6 @@ const StyledVideoPlayer = styled.div`
 
   canvas {
     height: calc(100% - ${CONTROL_BAR_HEIGHT}px);
-    object-fit: contain;
-    position: absolute;
-    visibility: hidden;
     width: 100%;
   }
 `;
