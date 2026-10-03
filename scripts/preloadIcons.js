@@ -140,6 +140,20 @@ writeFileSync(
 );
 
 writeFileSync(
+  join(PUBLIC_DIR, ".index", "desktopIcons.json"),
+  JSON.stringify([
+    ...new Set([SHORTCUT_ICON, ...getPublicDirectoryIcons(DESKTOP_PATH)]),
+  ])
+);
+
+writeFileSync(
+  join(PUBLIC_DIR, ".index", "startMenuIcons.json"),
+  JSON.stringify([
+    ...new Set([NEW_FOLDER_ICON, ...getPublicDirectoryIcons(START_MENU_PATH)]),
+  ])
+);
+
+writeFileSync(
   join(PUBLIC_DIR, ".index", "preloadIcons.json"),
   JSON.stringify([...new Set(preloadIcons)])
 );
