@@ -1,6 +1,14 @@
 import { basename, join } from "path";
 import dynamic from "next/dynamic";
-import { type KeyboardEventHandler, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  type KeyboardEventHandler,
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import StyledLoading from "components/system/Apps/StyledLoading";
 import FileEntry from "components/system/Files/FileEntry";
 import Columns from "components/system/Files/FileManager/Columns";
