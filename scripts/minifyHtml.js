@@ -85,7 +85,7 @@ const CODE_REPLACE_FUNCTIONS = [
   },
   (html) =>
     html.replace(
-      /<script defer src=\/_next\/static\/chunks\/polyfills-[a-zA-Z0-9-_]+.js nomodule=""><\/script>/,
+      /<script defer src=(?:\/[^ >]+)?\/_next\/static\/chunks\/polyfills-[a-zA-Z0-9-_]+.js nomodule=""><\/script>/,
       ""
     ),
   (html) =>
@@ -101,11 +101,11 @@ readdirSync(OUT_PATH).forEach(async (entry) => {
     const html = readFileSync(fullPath);
     let minifiedHtml = await minify(html.toString(), HTML_MINIFIER_CONFIG);
 
-    CODE_REPLACE_FUNCTIONS.forEach((codeFunction) => {
+    CODE_REPLACE_FUNCTIONS.forEach((codeFunction, index) => {
       const changedCode = codeFunction(minifiedHtml);
 
       if (minifiedHtml === changedCode) {
-        throw new Error("Code replacement failed!");
+        throw new Error(`Code replacement ${index + 1} failed!`);
       }
 
       minifiedHtml = changedCode;
