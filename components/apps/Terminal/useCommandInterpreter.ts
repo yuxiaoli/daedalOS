@@ -48,6 +48,7 @@ import { useProcessesActions, useProcessesRef } from "contexts/process";
 import processDirectory from "contexts/process/directory";
 import { useSessionActions } from "contexts/session";
 import {
+  BASE_PATH,
   DEFAULT_LOCALE,
   DESKTOP_PATH,
   HIGH_PRIORITY_REQUEST,
@@ -777,7 +778,7 @@ const useCommandInterpreter = (
           }
           case "neofetch":
           case "systeminfo": {
-            await loadFiles(["/Program Files/Xterm.js/ua-parser.js"]);
+            await loadFiles([`${BASE_PATH}/Program Files/Xterm.js/ua-parser.js`]);
 
             const {
               browser,

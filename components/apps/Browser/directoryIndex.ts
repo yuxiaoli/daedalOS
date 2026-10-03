@@ -1,6 +1,6 @@
 import { basename } from "path";
 import extensions from "components/system/Files/FileEntry/extensions";
-import { ROOT_NAME } from "utils/constants";
+import { BASE_PATH, ROOT_NAME } from "utils/constants";
 import { getExtension, getTZOffsetISOString } from "utils/functions";
 
 export type DirectoryEntries = {
@@ -12,7 +12,7 @@ export type DirectoryEntries = {
   size?: number;
 };
 
-const DIRECTORY_INDEX_ICON_PATH = "/Program Files/Browser/directory/icons";
+const DIRECTORY_INDEX_ICON_PATH = `${BASE_PATH}/Program Files/Browser/directory/icons`;
 
 const iconExtMap = {
   ".7z": "compressed",
