@@ -88,11 +88,6 @@ const CODE_REPLACE_FUNCTIONS = [
       /<script defer src=(?:\/[^ >]+)?\/_next\/static\/chunks\/polyfills-[a-zA-Z0-9-_]+.js nomodule=""><\/script>/,
       ""
     ),
-  (html) =>
-    html.replace(
-      /<script id=__NEXT_DATA__ type=application\/json>(.*)<\/script>/,
-      `<script id=__NEXT_DATA__ type=application/json>{"buildId":"${getCommitHash() || Date.now()}","page":"/","props":{}}</script>`
-    ),
 ];
 
 readdirSync(OUT_PATH).forEach(async (entry) => {
@@ -114,7 +109,7 @@ readdirSync(OUT_PATH).forEach(async (entry) => {
     const repoUrl = getRepoUrl();
 
     if (repoUrl) {
-      minifiedHtml = `<!-- ${repoUrl} -->\n${minifiedHtml}`;
+      minifiedHtml = `<!-- ${repoUrl} @ ${getCommitHash()} -->\n${minifiedHtml}`;
     }
 
     writeFileSync(fullPath, minifiedHtml);
