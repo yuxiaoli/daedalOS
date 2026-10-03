@@ -1,5 +1,13 @@
 import { basename } from "path";
-import { memo, useCallback, useEffect, useRef, useState } from "react";
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type FC,
+  type KeyboardEvent,
+} from "react";
 import Navigation from "components/apps/FileExplorer/Navigation";
 import StyledFileExplorer from "components/apps/FileExplorer/StyledFileExplorer";
 import { type ComponentProcessProps } from "components/system/Apps/RenderComponent";
@@ -11,6 +19,7 @@ import { useProcess, useProcessesActions } from "contexts/process";
 import {
   COMPRESSED_FOLDER_ICON,
   FOLDER_ICON,
+  ICON_PATH,
   MOUNTED_FOLDER_ICON,
   PREVENT_SCROLL,
   ROOT_NAME,
@@ -49,7 +58,7 @@ const FileExplorer: FC<ComponentProcessProps> = ({ id }) => {
       );
 
       fileManagerEntry?.dispatchEvent(
-        new KeyboardEvent("keydown", {
+        new window.KeyboardEvent("keydown", {
           bubbles: true,
           cancelable: true,
           ctrlKey: event.ctrlKey,
@@ -73,14 +82,14 @@ const FileExplorer: FC<ComponentProcessProps> = ({ id }) => {
         if (mountUrl && url === mountUrl) {
           setProcessIcon(
             id,
-            isMountedFolder(rootFs?.mntMap[url])
+            isMountedFolder(rootFs?.mntMap?.[url])
               ? MOUNTED_FOLDER_ICON
               : COMPRESSED_FOLDER_ICON
           );
         } else if (fs) {
           setProcessIcon(
             id,
-            `/System/Icons/${directoryName ? "folder" : "pc"}.webp`
+            `${ICON_PATH}/${directoryName ? "folder" : "pc"}.webp`
           );
           getIconFromIni(fs, url).then((iconFile) => {
             if (iconFile) setProcessIcon(id, iconFile);
@@ -106,33 +115,31 @@ const FileExplorer: FC<ComponentProcessProps> = ({ id }) => {
   useEffect(() => {
     if (componentWindow && !closing && !url) {
       setProcessUrl(id, "/");
-      setProcessIcon(id, "/System/Icons/pc.webp");
+      setProcessIcon(id, `${ICON_PATH}/pc.webp`);
     }
   }, [closing, id, componentWindow, setProcessIcon, setProcessUrl, url]);
 
-  useEffect(() => {
-    componentWindow?.addEventListener("keydown", onKeyDown, {
-      capture: true,
-    });
-
-    return () =>
-      componentWindow?.removeEventListener("keydown", onKeyDown, {
-        capture: true,
-      });
-  }, [componentWindow, onKeyDown]);
-
-  return url ? (
+  return (
     <StyledFileExplorer>
       <Navigation
         addressBarRef={addressBarRef}
-        hideSearch={Boolean(mountUrl)}
+        hideSearch={false}
         id={id}
         searchBarRef={searchBarRef}
       />
-      <FileManager id={id} url={url} showStatusBar />
+      <FileManager
+        id={id}
+        onKeyDown={onKeyDown}
+        readOnly={
+          mountUrl ? !isMountedFolder(rootFs?.mntMap?.[mountUrl]) : false
+        }
+        url={url}
+        view="icon"
+        allowMovingDraggableEntries
+        loadIconsImmediately
+      />
     </StyledFileExplorer>
-  ) : // eslint-disable-next-line unicorn/no-null
-  null;
+  );
 };
 
 export default memo(FileExplorer);

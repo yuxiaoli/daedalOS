@@ -5,10 +5,11 @@ import {
 } from "components/system/Desktop/Wallpapers/vantaWaves/config";
 import { type VantaWavesConfig } from "components/system/Desktop/Wallpapers/vantaWaves/types";
 import { loadFiles } from "utils/functions";
+import { BASE_PATH } from "utils/constants";
 
 export const libs = [
-  "/System/Vanta.js/three.min.js",
-  "/System/Vanta.js/vanta.waves.min.js",
+  `${BASE_PATH}/System/Vanta.js/three.min.js`,
+  `${BASE_PATH}/System/Vanta.js/vanta.waves.min.js`,
 ];
 
 const vantaWaves = (

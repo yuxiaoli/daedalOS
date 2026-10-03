@@ -1,6 +1,6 @@
 import { basename, join } from "path";
 import dynamic from "next/dynamic";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { type KeyboardEventHandler, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import StyledLoading from "components/system/Apps/StyledLoading";
 import FileEntry from "components/system/Files/FileEntry";
 import Columns from "components/system/Files/FileManager/Columns";
@@ -47,11 +47,13 @@ type FileManagerProps = {
   isDesktop?: boolean;
   isStartMenu?: boolean;
   loadIconsImmediately?: boolean;
+  onKeyDown?: KeyboardEventHandler<HTMLElement>;
   readOnly?: boolean;
   showStatusBar?: boolean;
   skipFsWatcher?: boolean;
   skipSorting?: boolean;
   url: string;
+  view?: FileManagerViewNames;
 };
 
 const DEFAULT_VIEW = "icon";
@@ -66,21 +68,24 @@ const FileManager: FC<FileManagerProps> = ({
   isDesktop,
   isStartMenu,
   loadIconsImmediately,
+  onKeyDown,
   readOnly,
   showStatusBar,
   skipFsWatcher,
   skipSorting,
   url,
+  view: viewProp,
 }) => {
   const { setForegroundId, setViews } = useSessionActions();
   const foregroundId = useForegroundId();
   const sessionView = useView(url);
   const view = useMemo(() => {
+    if (viewProp) return viewProp;
     if (isDesktop) return "icon";
     if (isStartMenu) return "list";
 
     return sessionView || DEFAULT_VIEW;
-  }, [isDesktop, isStartMenu, sessionView]);
+  }, [isDesktop, isStartMenu, sessionView, viewProp]);
   const isDetailsView = useMemo(() => view === "details", [view]);
   const [columns, setColumns] = useState<ColumnsObject | undefined>(() =>
     isDetailsView ? DEFAULT_COLUMNS : undefined
@@ -157,7 +162,7 @@ const FileManager: FC<FileManagerProps> = ({
   const [permission, setPermission] = useState<PermissionState>("prompt");
   const requestingPermissions = useRef(false);
   const focusedOnLoad = useRef(false);
-  const onKeyDown = useMemo(
+  const folderKeyDown = useMemo(
     () => (renaming === "" ? keyShortcuts() : undefined),
     [keyShortcuts, renaming]
   );
@@ -270,7 +275,14 @@ const FileManager: FC<FileManagerProps> = ({
                 : `${basename(url)} folder`
               : basename(url) || ROOT_NAME
         }
-        onKeyDownCapture={loading ? undefined : onKeyDown}
+        onKeyDownCapture={
+          loading
+            ? undefined
+            : (event) => {
+                folderKeyDown?.(event);
+                onKeyDown?.(event);
+              }
+        }
         {...(isDesktop && { onFocusCapture: onDesktopFocusCapture })}
         {...(loading || readOnly
           ? { onContextMenu: haltEvent }

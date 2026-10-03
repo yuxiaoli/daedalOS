@@ -3,7 +3,7 @@ import { memo } from "react";
 import { useCursor } from "components/pages/hooks/useCursor";
 import { useFaviconAndTitle } from "components/pages/hooks/useFaviconAndTitle";
 import desktopIcons from "public/.index/desktopIcons.json";
-import { HIGH_PRIORITY_ELEMENT, PACKAGE_DATA } from "utils/constants";
+import { BASE_PATH, HIGH_PRIORITY_ELEMENT, PACKAGE_DATA } from "utils/constants";
 import {
   getExtension,
   getMimeType,
@@ -57,7 +57,7 @@ const Metadata: FC = () => {
       <meta content={`${author.url}/screenshot.png`} property="og:image" />
       <meta content={description} property="og:description" />
       <link
-        href={`${author.url}/rss.xml`}
+        href={`${author.url}${BASE_PATH}/rss.xml`}
         rel="alternate"
         title={`RSS Feed for ${alias}`}
         type="application/rss+xml"
