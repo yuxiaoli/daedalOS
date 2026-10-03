@@ -324,6 +324,12 @@ const directory: Processes = {
       width: 610,
     },
     icon: `${ICON_PATH}/xterm.webp`,
+    libs: [
+      `${BASE_PATH}/Program Files/Xterm.js/xterm.css`,
+      `${BASE_PATH}/Program Files/Xterm.js/xterm.js`,
+      `${BASE_PATH}/Program Files/Xterm.js/xterm-addon-fit.js`,
+      `${BASE_PATH}/Program Files/Xterm.js/local-echo.js`,
+    ],
     title: "Terminal",
   },
   Tic80: {
@@ -336,6 +342,7 @@ const directory: Processes = {
     icon: `${ICON_PATH}/tic80.webp`,
     libs: [`${BASE_PATH}/Program Files/Tic80/tic80.js`],
     lockAspectRatio: true,
+    dependantLibs: [`${BASE_PATH}/Program Files/Tic80/tic80.wasm`],
     title: "TIC-80",
   },
   TinyMCE: {
@@ -347,6 +354,12 @@ const directory: Processes = {
     },
     icon: `${ICON_PATH}/tinymce.webp`,
     libs: [`${BASE_PATH}/Program Files/TinyMCE/tinymce.min.js`],
+    dependantLibs: [
+      `${BASE_PATH}/Program Files/TinyMCE/themes/silver/theme.min.js`,
+      `${BASE_PATH}/Program Files/TinyMCE/models/dom/model.min.js`,
+      `${BASE_PATH}/Program Files/TinyMCE/icons/default/icons.min.js`,
+      `${BASE_PATH}/Program Files/TinyMCE/skins/ui/oxide/skin.min.css`,
+    ],
     title: "TinyMCE",
   },
   Transfer: {
@@ -370,8 +383,9 @@ const directory: Processes = {
       width: 640,
     },
     icon: `${ICON_PATH}/v86.webp`,
-    libs: [`${BASE_PATH}/Program Files/Virtual86/libv86.js`],
+    libs: [`${BASE_PATH}/Program Files/Virtual x86/libv86.js`],
     lockAspectRatio: true,
+    dependantLibs: [`${BASE_PATH}/Program Files/Virtual x86/v86.wasm`],
     title: "Virtual x86",
   },
   VideoPlayer: {
@@ -382,7 +396,11 @@ const directory: Processes = {
       width: 640,
     },
     icon: `${ICON_PATH}/vlc.webp`,
-    libs: [`${BASE_PATH}/Program Files/Video.js/video.min.js`],
+    libs: [
+      `${BASE_PATH}/Program Files/Video.js/video-js.min.css`,
+      `${BASE_PATH}/Program Files/Video.js/video.min.js`,
+      `${BASE_PATH}/Program Files/Video.js/Youtube.min.js`,
+    ],
     title: "Video Player",
   },
   Webamp: {
