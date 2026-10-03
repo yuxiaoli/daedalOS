@@ -1,4 +1,4 @@
-import { DESKTOP_PATH } from "utils/constants";
+import { BASE_PATH, DESKTOP_PATH } from "utils/constants";
 
 const plugins = `
   code help image link save wordcount`;
@@ -9,7 +9,7 @@ const toolbar = `
 
 export const config = {
   a11y_advanced_options: true,
-  base_url: "/Program Files/TinyMCE/",
+  base_url: `${BASE_PATH}/Program Files/TinyMCE/`,
   branding: false,
   browser_spellcheck: true,
   contextmenu: "",
