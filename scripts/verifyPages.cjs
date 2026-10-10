@@ -97,26 +97,45 @@ async function main() {
     await terminal.waitFor();
     await page.waitForFunction(() => window.sessionIsWriteable);
     const rows = () => terminal.locator(".xterm-rows").innerText();
-    async function command(text) {
+    async function waitForOutput(hasOutput, description) {
+      const deadline = Date.now() + 60_000;
+      let output;
+      do {
+        output = await rows();
+        // The interpreter prints its next prompt after the async command resolves.
+        if (/\/Users\/Public>\s*$/.test(output) && hasOutput(output))
+          return output;
+        await page.waitForTimeout(100);
+      } while (Date.now() < deadline);
+      assert.fail(`${description}: ${output}`);
+    }
+    async function command(text, hasOutput) {
+      await waitForOutput(() => true, "Terminal prompt did not become ready");
       await terminal.click();
       await terminal.pressSequentially(text);
       await terminal.press("Enter");
-      await page.waitForTimeout(600);
+      return waitForOutput(
+        hasOutput,
+        `Terminal command did not complete: ${text}`
+      );
     }
-    await command("echo pages-maintenance-ok");
+    await command("echo pages-maintenance-ok", (output) =>
+      output.split("\n").some((line) => line.trim() === "pages-maintenance-ok")
+    );
     assert(
       (await rows())
         .split("\n")
         .some((line) => line.trim() === "pages-maintenance-ok"),
       "Terminal echo failed"
     );
-    await command("dir /System");
+    await command("dir /System", (output) => output.includes("coremark.wasm"));
     assert(
       (await rows()).includes("coremark.wasm"),
       `System directory lookup failed: ${await rows()}`
     );
-    await command("type /session.json");
-    const saved = await rows();
+    const saved = await command("type /session.json", (output) =>
+      output.replace(/\s/g, "").includes('"wallpaperImage":"SLIDESHOW"')
+    );
     assert(
       saved.replace(/\s/g, "").includes('"wallpaperImage":"SLIDESHOW"'),
       "Empty fallback is unstable"
@@ -127,7 +146,9 @@ async function main() {
     await page.getByText("Background", { exact: true }).hover();
     await page.getByText("Picture Slideshow", { exact: true }).click();
     await page.waitForTimeout(1000);
-    await command("type /session.json");
+    await command("type /session.json", (output) =>
+      output.replace(/\s/g, "").includes('"wallpaperImage":"SLIDESHOWALT"')
+    );
     assert(
       (await rows())
         .replace(/\s/g, "")
@@ -137,7 +158,9 @@ async function main() {
     await page.reload({ waitUntil: "domcontentloaded" });
     await terminal.waitFor();
     await page.waitForFunction(() => window.sessionIsWriteable);
-    await command("type /session.json");
+    await command("type /session.json", (output) =>
+      output.replace(/\s/g, "").includes('"wallpaperImage":"SLIDESHOWALT"')
+    );
     assert(
       (await rows())
         .replace(/\s/g, "")
