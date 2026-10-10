@@ -27,6 +27,7 @@ import {
 } from "contexts/session";
 import useWorker from "hooks/useWorker";
 import {
+  BASE_PATH,
   DEFAULT_WALLPAPER,
   IMAGE_FILE_EXTENSIONS,
   MILLISECONDS_IN_MINUTE,
@@ -340,24 +341,34 @@ const useWallpaper = (
       if (slideshowFiles[wallpaperImage].length === 0) {
         const slideshowFilePath = `${PICTURES_FOLDER}/${SLIDESHOW_FILE}`;
         // Read without exists(), which costs an extra HEAD request over HTTP
-        let slideshowJson = (await readFile(slideshowFilePath)).toString();
+        let slides = JSON.parse(
+          (await readFile(slideshowFilePath)).toString() || "[]"
+        ) as string[];
 
-        if (!slideshowJson) {
-          slideshowJson = JSON.stringify(
-            (await exists(PICTURES_FOLDER))
-              ? await getAllImages(PICTURES_FOLDER)
-              : []
-          );
-          await writeFile(slideshowFilePath, slideshowJson, true);
-          updateFolder(PICTURES_FOLDER, SLIDESHOW_FILE);
+        if (slides.length === 0) {
+          slides = (await exists(PICTURES_FOLDER))
+            ? await getAllImages(PICTURES_FOLDER)
+            : [];
+
+          if (slides.length > 0) {
+            await writeFile(slideshowFilePath, JSON.stringify(slides), true);
+            updateFolder(PICTURES_FOLDER, SLIDESHOW_FILE);
+          }
         }
 
         slideshowFiles[wallpaperImage].push(
-          ...[...new Set(JSON.parse(slideshowJson) as string[])]
+          ...[...new Set(slides)]
             .sort(() => Math.random() - 0.5)
-            .map((url) =>
-              url.startsWith("/") ? `${window.location.origin}${url}` : url
-            )
+            .map((url) => {
+              if (!url.startsWith("/")) return url;
+
+              const assetPath =
+                BASE_PATH && !url.startsWith(`${BASE_PATH}/`)
+                  ? `${BASE_PATH}${url}`
+                  : url;
+
+              return `${window.location.origin}${assetPath}`;
+            })
         );
       }
 
@@ -527,7 +538,7 @@ const useWallpaper = (
           }
         }
       }
-    } else {
+    } else if (!isSlideshow) {
       loadWallpaper();
     }
   }, [

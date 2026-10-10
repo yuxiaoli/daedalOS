@@ -73,3 +73,20 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Fetch verification script from exact commit
+        run: curl --fail --retry 3 --output "$RUNNER_TEMP/verifyPages.cjs" "https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/scripts/verifyPages.cjs"
+      - name: Set up Node.js for verification
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+      - name: Install browser driver
+        run: npm install --prefix "$RUNNER_TEMP/pages-browser" --no-save --ignore-scripts playwright@1.63.0
+      - name: Verify published assets and browser fallback
+        env:
+          PAGES_BASE_URL: ${{ steps.deployment.outputs.page_url }}
+          EXPECTED_SHA: ${{ github.sha }}
+          CHROME_BIN: /usr/bin/google-chrome
+        run: |
+          export NODE_PATH="$RUNNER_TEMP/pages-browser/node_modules"
+          node "$RUNNER_TEMP/verifyPages.cjs"

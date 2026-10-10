@@ -300,11 +300,11 @@ export const SAVE_TITLE_CHAR = "\u25CF";
 
 export const ROOT_NAME = "My PC";
 
-export const SYSTEM_PATH = `${BASE_PATH}/System`;
+export const SYSTEM_PATH = "/System";
 
 export const ROOT_SHORTCUT = `${ROOT_NAME}.url`;
 
-export const ICON_PATH = `${SYSTEM_PATH}/Icons`;
+export const ICON_PATH = `${BASE_PATH}${SYSTEM_PATH}/Icons`;
 
 export const PHOTO_ICON = `${ICON_PATH}/photo.webp`;
 
@@ -316,7 +316,7 @@ export const YT_ICON_CACHE = `${ICON_CACHE}/YouTube`;
 
 export const ICON_CACHE_EXTENSION = ".cache";
 
-export const SESSION_FILE = `${BASE_PATH}/session.json`;
+export const SESSION_FILE = "/session.json";
 
 export const SHORTCUT_ICON = `${ICON_PATH}/shortcut.webp`;
 
