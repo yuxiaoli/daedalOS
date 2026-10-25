@@ -178,7 +178,7 @@ async function main() {
     assert((await rows()).includes("Sean / Yuxiao Li"));
     assert((await rows()).includes("By Dustin Brett. MIT License."));
     await command('type "/Users/Public/Documents/Welcome.txt"', (output) =>
-      output.includes("cloud services, AI applications")
+      output.includes("Bundled application and media credits: /CREDITS.md")
     );
     await command("dir /System", (output) => output.includes("coremark.wasm"));
     assert(
