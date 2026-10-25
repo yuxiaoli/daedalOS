@@ -14,6 +14,7 @@ This desktop's source: https://github.com/yuxiaoli/daedalOS
 
 MAKE YOURSELF AT HOME
 Open Browser to explore Vector Index, or use its bookmarks for my public links.
+If the embedded homepage cannot load, choose Vector Index (open externally).
 Monaco Editor and TinyMCE are available from Start for your own notes.
 Use Ctrl+S in Monaco Editor to save; files are stored in this browser.
 You can open this document from the Welcome desktop shortcut.

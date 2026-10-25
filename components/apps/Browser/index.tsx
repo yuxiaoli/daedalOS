@@ -87,24 +87,9 @@ const Browser: FC<ComponentProcessProps> = ({ id }) => {
     if (inputRef.current) inputRef.current.value = history[position + step];
   };
   const currentUrl = useRef("");
-  const changeIframeWindowLocation = (
-    newUrl: string,
-    contentWindow: Window
-  ): void => {
-    let isSrcDoc = false;
-
-    try {
-      isSrcDoc = contentWindow.location?.pathname === "srcdoc";
-    } catch {
-      // Ignore failure to read iframe window path
-    }
-
-    if (isSrcDoc) {
-      setSrcDoc("");
-      iframeRef.current?.setAttribute("src", newUrl);
-    } else {
-      contentWindow.location?.replace(newUrl);
-    }
+  const changeIframeWindowLocation = (newUrl: string): void => {
+    setSrcDoc("");
+    iframeRef.current?.setAttribute("src", newUrl);
   };
   const goToLink = useCallback(
     (newUrl: string): void => {
@@ -139,10 +124,7 @@ const Browser: FC<ComponentProcessProps> = ({ id }) => {
 
         const loadLocalSite = (localPath: string, localTitle: string): void => {
           iframeRef.current?.removeAttribute("sandbox");
-          changeIframeWindowLocation(
-            `${window.location.origin}${localPath}`,
-            contentWindow
-          );
+          changeIframeWindowLocation(`${window.location.origin}${localPath}`);
           prependFileToTitle(localTitle);
         };
         const lowerAddressInput = addressInput.toLowerCase();
@@ -335,7 +317,7 @@ const Browser: FC<ComponentProcessProps> = ({ id }) => {
               ? await PROXIES[proxyState](processedUrl.href)
               : processedUrl.href;
 
-            changeIframeWindowLocation(addressUrl, contentWindow);
+            changeIframeWindowLocation(addressUrl);
 
             if (addressUrl.startsWith(GOOGLE_SEARCH_QUERY)) {
               prependFileToTitle(`${addressInput} - Google Search`);

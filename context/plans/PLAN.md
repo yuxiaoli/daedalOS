@@ -44,3 +44,11 @@ focused on changed entrypoints; this is not an assertion that all games or remot
 services were exercised.
 
 Messenger has no verified personal Nostr address; its bundled author contact seed is now blank. Existing messages, keys and saved contacts are unchanged. No private email or full resume was added.
+
+## Browser follow-up
+
+The previous deployed Browser shows an empty frame for Google and Vector Index in Chrome and Edge. Keep the iframe sandbox unchanged. Check element-based frame navigation and provide an explicit external Vector Index bookmark; verify the real portfolio through the external fallback even if embedding remains unavailable.
+
+Initial personalization pushed as b7d9bde154f06310db98c573ebfe95b4daae02e8; Pages run 40203143619 is in progress. Main SHA re-read unchanged.
+
+CI run 40203143619 completed locked install and the full Linux unit suite successfully. Changed application sources pass targeted oxlint; formatting and script syntax checks pass. The browser follow-up will receive a new develop commit and its own exact-commit Pages verification.

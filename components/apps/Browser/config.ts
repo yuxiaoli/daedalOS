@@ -36,6 +36,12 @@ export const bookmarks: Bookmark[] = [
   },
   {
     external: true,
+    icon: `${BASE_PATH}/System/Icons/chromium.webp`,
+    name: "Vector Index (open externally)",
+    url: DESKTOP_PROFILE.url,
+  },
+  {
+    external: true,
     icon: `${BASE_PATH}/System/Icons/monaco.webp`,
     name: "Sean on GitHub",
     url: DESKTOP_PROFILE.github,
