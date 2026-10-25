@@ -111,7 +111,23 @@ async function main() {
     const address = page.getByLabel("Address and search bar", { exact: true });
     await address.waitFor();
     assert.equal(await address.inputValue(), "https://vectorindex.cloud");
-    const popupPromise = page.waitForEvent("popup");
+    await page.waitForFunction(() =>
+      document
+        .querySelector('iframe[title^="Browser"]')
+        ?.getAttribute("src")
+        ?.startsWith("https://vectorindex.cloud")
+    );
+    const homepagePopupPromise = page.context().waitForEvent("page");
+    await page
+      .getByRole("button", {
+        name: "Vector Index (open externally)",
+        exact: true,
+      })
+      .click();
+    const homepagePopup = await homepagePopupPromise;
+    await homepagePopup.waitForURL(/^https:\/\/vectorindex\.cloud\/?$/);
+    await homepagePopup.close();
+    const popupPromise = page.context().waitForEvent("page");
     await page
       .getByRole("button", { name: "Sean on GitHub", exact: true })
       .click();
@@ -223,6 +239,7 @@ async function main() {
             "personal metadata",
             "Welcome shortcut opens text editor",
             "Vector Index browser homepage",
+            "Vector Index external fallback",
             "GitHub bookmark opens externally",
             "personal terminal greeting with upstream credit",
             "Terminal echo",
