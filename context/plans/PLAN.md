@@ -52,3 +52,5 @@ The previous deployed Browser shows an empty frame for Google and Vector Index i
 Initial personalization pushed as b7d9bde154f06310db98c573ebfe95b4daae02e8; Pages run 40203143619 is in progress. Main SHA re-read unchanged.
 
 CI run 40203143619 completed locked install and the full Linux unit suite successfully. Changed application sources pass targeted oxlint; formatting and script syntax checks pass. The browser follow-up will receive a new develop commit and its own exact-commit Pages verification.
+
+The first Pages deployment succeeded, but its browser acceptance check failed when opening Welcome: Monaco stayed on its loading screen. Its loader config used a root /Program Files path without the existing /daedalOS prefix. Repair that path, keep bundled editor behavior, and rerun exact-commit CI; do not treat the first deployment as fully verified.

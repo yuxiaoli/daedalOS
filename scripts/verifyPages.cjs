@@ -37,6 +37,7 @@ async function main() {
   const assets = [
     ...scriptUrls,
     new URL("System/Icons/48x48/pc.webp", baseUrl).href,
+    new URL("Program Files/MonacoEditor/vs/loader.js", baseUrl).href,
   ];
   for (const url of assets) {
     const response = await fetch(url);
