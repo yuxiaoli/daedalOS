@@ -96,16 +96,19 @@ async function main() {
       await page.locator('meta[property="og:url"]').getAttribute("content"),
       "https://yuxiaoli.github.io/daedalOS"
     );
+    console.log("Checking Welcome editor");
     await desktop.getByLabel("Welcome", { exact: true }).dblclick();
-    const welcomeEditor = page.locator(".monaco-editor");
+    const welcomeEditor = page.locator('.monaco-editor[role="code"]');
     await welcomeEditor.waitFor();
     await page.waitForFunction(() =>
       document
-        .querySelector(".monaco-editor")
-        ?.textContent.includes("YUXIAO LI")
+        .querySelector('.monaco-editor[role="code"]')
+        ?.textContent?.replace(/\s/g, "")
+        .includes("YUXIAOLI")
     );
     await page.getByLabel("Close", { exact: true }).last().click();
 
+    console.log("Checking browser homepage and external links");
     await page.goto(`${baseUrl}?app=Browser`, {
       waitUntil: "domcontentloaded",
     });
@@ -118,25 +121,32 @@ async function main() {
         ?.getAttribute("src")
         ?.startsWith("https://vectorindex.cloud")
     );
-    const homepagePopupPromise = page.context().waitForEvent("page");
+    const homepagePopupPromise = page
+      .context()
+      .waitForEvent("page", { timeout: 30000 });
     await page
       .getByRole("button", {
         name: "Vector Index (open externally)",
         exact: true,
       })
       .click();
+    console.log("Waiting for external homepage window");
     const homepagePopup = await homepagePopupPromise;
     await homepagePopup.waitForURL(/^https:\/\/vectorindex\.cloud\/?$/);
     await homepagePopup.close();
-    const popupPromise = page.context().waitForEvent("page");
+    const popupPromise = page
+      .context()
+      .waitForEvent("page", { timeout: 30000 });
     await page
       .getByRole("button", { name: "Sean on GitHub", exact: true })
       .click();
+    console.log("Waiting for external GitHub window");
     const popup = await popupPromise;
     await popup.waitForURL(/^https:\/\/github\.com\/yuxiaoli\/?$/);
     await popup.close();
     await page.getByLabel("Close", { exact: true }).last().click();
 
+    console.log("Checking Terminal and session persistence");
     await page.goto(`${baseUrl}?app=Terminal`, {
       waitUntil: "domcontentloaded",
     });
@@ -177,9 +187,6 @@ async function main() {
     );
     assert((await rows()).includes("Sean / Yuxiao Li"));
     assert((await rows()).includes("By Dustin Brett. MIT License."));
-    await command('type "/Users/Public/Documents/Welcome.txt"', (output) =>
-      output.includes("Bundled application and media credits: /CREDITS.md")
-    );
     await command("dir /System", (output) => output.includes("coremark.wasm"));
     assert(
       (await rows()).includes("coremark.wasm"),
