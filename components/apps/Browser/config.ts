@@ -1,8 +1,9 @@
 import { type ProxyState } from "components/apps/Browser/useProxyMenu";
 import { get9pModifiedTime } from "contexts/fileSystem/core";
-import { BASE_PATH, FAVICON_BASE_PATH } from "utils/constants";
+import { BASE_PATH, DESKTOP_PROFILE, FAVICON_BASE_PATH } from "utils/constants";
 
 type Bookmark = {
+  external?: boolean;
   icon: string;
   name: string;
   path?: string;
@@ -29,8 +30,25 @@ export const SURF_TO_MISC = {
 
 export const bookmarks: Bookmark[] = [
   {
+    icon: `${BASE_PATH}/System/Icons/chromium.webp`,
+    name: "Vector Index — Sean's homepage",
+    url: DESKTOP_PROFILE.url,
+  },
+  {
+    external: true,
+    icon: `${BASE_PATH}/System/Icons/monaco.webp`,
+    name: "Sean on GitHub",
+    url: DESKTOP_PROFILE.github,
+  },
+  {
+    external: true,
     icon: FAVICON_BASE_PATH,
-    name: "daedalOS",
+    name: "This desktop's source",
+    url: "https://github.com/yuxiaoli/daedalOS",
+  },
+  {
+    icon: FAVICON_BASE_PATH,
+    name: "daedalOS — Dustin Brett (upstream)",
     url: "https://dustinbrett.com/",
   },
   {
@@ -67,7 +85,7 @@ export const bookmarks: Bookmark[] = [
   },
 ];
 
-export const HOME_PAGE = "https://www.google.com/webhp?igu=1";
+export const HOME_PAGE = DESKTOP_PROFILE.url;
 
 export const NOT_FOUND =
   '<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN"><html><head><title>404 Not Found</title><style>h1{display:inline;}</style></head><body><h1>Not Found</h1><p>The requested URL was not found on this server.</p></body></html>';

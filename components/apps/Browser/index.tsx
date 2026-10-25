@@ -475,11 +475,13 @@ const Browser: FC<ComponentProcessProps> = ({ id }) => {
         </Button>
       </nav>
       <nav aria-label="Bookmarks">
-        {bookmarks.map(({ icon, name, url: bookmarkUrl }) => (
+        {bookmarks.map(({ external, icon, name, url: bookmarkUrl }) => (
           <Button
             key={name}
             onClick={({ ctrlKey }) => {
-              if (ctrlKey) {
+              if (external) {
+                window.open(bookmarkUrl, "_blank", "noopener,noreferrer");
+              } else if (ctrlKey) {
                 open("Browser", { url: bookmarkUrl });
               } else {
                 goToLink(bookmarkUrl);

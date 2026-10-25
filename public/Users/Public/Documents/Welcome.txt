@@ -1,0 +1,31 @@
+SEAN / YUXIAO LI
+
+Welcome to my desktop.
+
+Welcome. Curiosity has a desktop now.
+
+I’m Sean. This is a browser pretending to be somewhere else, built on the work of open-source communities.
+
+Open a window. Follow a hunch. Try the command you think should work. Some things will feel familiar; others are still being figured out.
+
+The interesting part isn’t making pixels look like an operating system. It’s seeing how much of the experience lives in the details.
+
+Found a rough edge? That’s a good place to contribute.
+
+Keep exploring: https://vectorindex.cloud
+
+EXPLORE
+Homepage and projects: https://vectorindex.cloud
+GitHub: https://github.com/yuxiaoli
+This desktop's source: https://github.com/yuxiaoli/daedalOS
+
+MAKE YOURSELF AT HOME
+Open Browser to explore Vector Index, or use its bookmarks for my public links.
+Monaco Editor and TinyMCE are available from Start for your own notes.
+Use Ctrl+S in Monaco Editor to save; files are stored in this browser.
+You can open this document from the Welcome desktop shortcut.
+
+ABOUT THIS DESKTOP
+This personal edition is based on daedalOS by Dustin Brett, under the MIT license.
+Upstream project: https://github.com/DustinBrett/daedalOS
+Bundled application and media credits: /CREDITS.md

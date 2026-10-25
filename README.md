@@ -2,6 +2,14 @@
 
 ## _Desktop environment in the browser_
 
+This is [Sean / Yuxiao Li's personal desktop](https://yuxiaoli.github.io/daedalOS/),
+with [Vector Index](https://vectorindex.cloud) as its browser homepage and a
+Welcome document introducing Sean's work and public links.
+[Sean on GitHub](https://github.com/yuxiaoli).
+
+Based on [daedalOS by Dustin Brett](https://github.com/DustinBrett/daedalOS).
+The upstream MIT license, authorship, and bundled third-party credits are retained.
+
 ![Screenshot](https://raw.githubusercontent.com/DustinBrett/daedalOS/refs/heads/main/public/screenshot.png?raw=true)
 
 ### Feature Overview

@@ -90,6 +90,36 @@ async function main() {
     await page.getByLabel("Close", { exact: true }).last().waitFor();
     await page.getByLabel("Close", { exact: true }).last().click();
 
+    assert((await page.title()).includes("Sean's Desktop"));
+    assert.equal(
+      await page.locator('meta[property="og:url"]').getAttribute("content"),
+      "https://yuxiaoli.github.io/daedalOS"
+    );
+    await desktop.getByLabel("Welcome", { exact: true }).dblclick();
+    const welcomeEditor = page.locator(".monaco-editor");
+    await welcomeEditor.waitFor();
+    await page.waitForFunction(() =>
+      document
+        .querySelector(".monaco-editor")
+        ?.textContent.includes("YUXIAO LI")
+    );
+    await page.getByLabel("Close", { exact: true }).last().click();
+
+    await page.goto(`${baseUrl}?app=Browser`, {
+      waitUntil: "domcontentloaded",
+    });
+    const address = page.getByLabel("Address and search bar", { exact: true });
+    await address.waitFor();
+    assert.equal(await address.inputValue(), "https://vectorindex.cloud");
+    const popupPromise = page.waitForEvent("popup");
+    await page
+      .getByRole("button", { name: "Sean on GitHub", exact: true })
+      .click();
+    const popup = await popupPromise;
+    await popup.waitForURL(/^https:\/\/github\.com\/yuxiaoli\/?$/);
+    await popup.close();
+    await page.getByLabel("Close", { exact: true }).last().click();
+
     await page.goto(`${baseUrl}?app=Terminal`, {
       waitUntil: "domcontentloaded",
     });
@@ -127,6 +157,11 @@ async function main() {
         .split("\n")
         .some((line) => line.trim() === "pages-maintenance-ok"),
       "Terminal echo failed"
+    );
+    assert((await rows()).includes("Sean / Yuxiao Li"));
+    assert((await rows()).includes("By Dustin Brett. MIT License."));
+    await command('type "/Users/Public/Documents/Welcome.txt"', (output) =>
+      output.includes("cloud services, AI applications")
     );
     await command("dir /System", (output) => output.includes("coremark.wasm"));
     assert(
@@ -185,6 +220,11 @@ async function main() {
             "desktop",
             "Start",
             "My PC open/close",
+            "personal metadata",
+            "Welcome shortcut opens text editor",
+            "Vector Index browser homepage",
+            "GitHub bookmark opens externally",
+            "personal terminal greeting with upstream credit",
             "Terminal echo",
             "System listing",
             "session save/restore",

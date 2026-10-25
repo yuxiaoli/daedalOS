@@ -2,9 +2,9 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useProcess } from "contexts/process";
 import { useForegroundId } from "contexts/session";
 import {
+  DESKTOP_PROFILE,
   FAVICON_BASE_PATH,
   ONE_TIME_PASSIVE_EVENT,
-  PACKAGE_DATA,
 } from "utils/constants";
 import {
   getDpi,
@@ -14,7 +14,7 @@ import {
   isDynamicIcon,
 } from "utils/functions";
 
-const { alias } = PACKAGE_DATA;
+const { title: alias } = DESKTOP_PROFILE;
 
 export const useFaviconAndTitle = (): {
   Favicon: null | React.JSX.Element;

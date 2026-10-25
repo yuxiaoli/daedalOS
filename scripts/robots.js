@@ -1,6 +1,6 @@
 const { readdirSync, statSync, writeFileSync } = require("fs");
 const { extname, join } = require("path");
-const { author } = require("../package.json");
+const { homepage } = require("../package.json");
 
 const xmlUrls = [];
 
@@ -8,7 +8,7 @@ const buildAppSitemap = (path) => {
   readdirSync(path).forEach((entry) => {
     if (statSync(join(path, entry)).isDirectory()) {
       xmlUrls.push(
-        `<url><loc>${author.url}/?app=${entry.replace(/-/g, "")}</loc></url>`
+        `<url><loc>${homepage}/?app=${entry.replace(/-/g, "")}</loc></url>`
       );
     }
   });
@@ -31,11 +31,11 @@ const buildFileSitemap = (path, excludePaths, callback) => {
 
       xmlUrls.push(
         callback(
-          `${author.url}/?url=${encodedUrlEntryPath}`,
+          `${homepage}/?url=${encodedUrlEntryPath}`,
           new Date(stats.mtime - new Date().getTimezoneOffset() * 60000)
             .toISOString()
             .substring(0, 10),
-          `${author.url}/${encodedUrlEntryPath}`
+          `${homepage}/${encodedUrlEntryPath}`
         )
       );
     }
@@ -69,7 +69,7 @@ writeFileSync(
 
 writeFileSync(
   "public/robots.txt",
-  `User-agent: *\nAllow: /\n\nSitemap: ${author.url}/sitemap.xml\n`,
+  `User-agent: *\nAllow: /\n\nSitemap: ${homepage}/sitemap.xml\n`,
   {
     flag: "w",
   }

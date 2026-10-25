@@ -3,7 +3,12 @@ import { memo } from "react";
 import { useCursor } from "components/pages/hooks/useCursor";
 import { useFaviconAndTitle } from "components/pages/hooks/useFaviconAndTitle";
 import desktopIcons from "public/.index/desktopIcons.json";
-import { BASE_PATH, HIGH_PRIORITY_ELEMENT, PACKAGE_DATA } from "utils/constants";
+import {
+  BASE_PATH,
+  DESKTOP_PROFILE,
+  DESKTOP_URL,
+  HIGH_PRIORITY_ELEMENT,
+} from "utils/constants";
 import {
   getExtension,
   getMimeType,
@@ -11,7 +16,8 @@ import {
   isDynamicIcon,
 } from "utils/functions";
 
-const { alias, author, description } = PACKAGE_DATA;
+const description =
+  "Sean / Yuxiao Li's personal desktop: explore Vector Index, AI applications, cloud services, and open-source projects. Built on daedalOS.";
 
 const PreloadIcons = memo(() =>
   desktopIcons.map((icon) => {
@@ -51,15 +57,15 @@ const Metadata: FC = () => {
         name="viewport"
       />
       <meta content={description} name="description" />
-      <meta content={alias} property="og:title" />
+      <meta content={DESKTOP_PROFILE.title} property="og:title" />
       <meta content="website" property="og:type" />
-      <meta content={author.url} property="og:url" />
-      <meta content={`${author.url}/screenshot.png`} property="og:image" />
+      <meta content={DESKTOP_URL} property="og:url" />
+      <meta content={`${DESKTOP_URL}/screenshot.png`} property="og:image" />
       <meta content={description} property="og:description" />
       <link
-        href={`${author.url}${BASE_PATH}/rss.xml`}
+        href={`${BASE_PATH}/rss.xml`}
         rel="alternate"
-        title={`RSS Feed for ${alias}`}
+        title={`RSS Feed for ${DESKTOP_PROFILE.title}`}
         type="application/rss+xml"
       />
       <PreloadIcons />
