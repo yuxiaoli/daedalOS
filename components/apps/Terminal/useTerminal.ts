@@ -24,7 +24,12 @@ import { useFileSystemActions } from "contexts/fileSystem";
 import { useProcess, useProcessesActions } from "contexts/process";
 import { useForegroundId } from "contexts/session";
 import useResizeObserver from "hooks/useResizeObserver";
-import { HOME, PACKAGE_DATA, PREVENT_SCROLL } from "utils/constants";
+import {
+  DESKTOP_PROFILE,
+  HOME,
+  PACKAGE_DATA,
+  PREVENT_SCROLL,
+} from "utils/constants";
 import {
   displayVersion,
   getExtension,
@@ -181,6 +186,7 @@ const useTerminal = ({
 
       localEcho.println(`${alias} [Version ${displayVersion()}]`);
       localEcho.println(`By ${author.name}. ${displayLicense}.`);
+      localEcho.println(`${DESKTOP_PROFILE.name} | ${DESKTOP_PROFILE.url}`);
 
       if (initialCommand) {
         localEcho.println(

@@ -7,7 +7,7 @@ const {
   existsSync,
 } = require("fs");
 const { basename, extname, join, relative } = require("path");
-const { author, description } = require("../package.json");
+const { homepage, description } = require("../package.json");
 
 const BLOG_EXTENSION = ".whtml";
 const PUBLIC_PATH = "public";
@@ -48,7 +48,7 @@ const createRssFeedItems = (url) => {
     return [
       "<item>",
       `<title>${basename(link, BLOG_EXTENSION)}</title>`,
-      `<link>${encodeURI(`${author.url}/?url=${relative(PUBLIC_PATH, link).replace(/\\/g, "/")}`)}</link>`,
+      `<link>${encodeURI(`${homepage}/?url=${relative(PUBLIC_PATH, link).replace(/\\/g, "/")}`)}</link>`,
       `<description>${itemDescription}${fileDataString.trim().length > 100 ? "..." : ""}</description>`,
       `<guid isPermaLink="false">${createHash("md5").update(fileData).digest("hex")}</guid>`,
       `<pubDate>${stats.mtime.toUTCString()}</pubDate>`,
@@ -62,9 +62,9 @@ const rss = [
   '<?xml version="1.0" encoding="utf-8"?>',
   '<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">',
   "<channel>",
-  `<atom:link href="${author.url}/rss.xml" rel="self" type="application/rss+xml" />`,
+  `<atom:link href="${homepage}/rss.xml" rel="self" type="application/rss+xml" />`,
   `<title>${name}</title>`,
-  `<link>${author.url}</link>`,
+  `<link>${homepage}</link>`,
   `<description>${description}</description>`,
   `<lastBuildDate>${lastBuildDate || new Date().toUTCString()}</lastBuildDate>`,
   ...createRssFeedItems("Users/Public/Documents/Blog Posts"),

@@ -1,0 +1,24 @@
+SEAN / YUXIAO LI
+
+Welcome to my desktop.
+
+I am a full-stack engineer and technology leader working across Industrial IoT,
+cloud services, AI applications, and international technology collaboration.
+At Vector Index, I build and experiment with developer tools, automation,
+and open-source software.
+
+EXPLORE
+Homepage and projects: https://vectorindex.cloud
+GitHub: https://github.com/yuxiaoli
+This desktop's source: https://github.com/yuxiaoli/daedalOS
+
+MAKE YOURSELF AT HOME
+Open Browser to explore Vector Index, or use its bookmarks for my public links.
+Monaco Editor and TinyMCE are available from Start for your own notes.
+Use Ctrl+S in Monaco Editor to save; files are stored in this browser.
+You can open this document from the Welcome desktop shortcut.
+
+ABOUT THIS DESKTOP
+This personal edition is based on daedalOS by Dustin Brett, under the MIT license.
+Upstream project: https://github.com/DustinBrett/daedalOS
+Bundled application and media credits: /CREDITS.md

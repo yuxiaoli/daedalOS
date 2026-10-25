@@ -1,0 +1,46 @@
+# Personal desktop defaults
+
+Updated 2026-10-25 UTC.
+
+## Scope and constraints
+
+- Personalize this existing yuxiaoli/daedalOS fork for Sean / Yuxiao Li; use the
+  user-confirmed public homepage https://vectorindex.cloud and GitHub yuxiaoli.
+- Keep upstream authorship, MIT license, third-party credits and documentation.
+- All changes and deployment source belong on develop. Main is a read-only
+  upstream cache maintained manually by the user. Do not synchronize or rewrite it.
+- Reuse https://yuxiaoli.github.io/daedalOS/ and its existing Pages workflow.
+- Touch bundled defaults only; preserve saved documents and browser storage.
+- Do not edit Boot Loader, Win11, other OS repositories, credentials or security.
+- Use a concise professional summary authorized by the user; publish no private
+  contact details or unverified resume facts.
+
+## Verified starting state
+
+- develop: 5f7b93d1ddc90962dc768f8c384c2f0790855464.
+- main: 0dae88ccb68ff50d269cc0f9266dcbb457b4cc20.
+- Remote default changed from main to develop and re-read verified on 2026-10-25.
+- Existing Pages workflow tests, builds and deploys develop; it verifies exact
+  commit and desktop/terminal/session flows. Existing public URL opens correctly.
+- Read AGENTS.md, README, package/lock/build/workflow files and the DOT protocol.
+- No existing project plan or TODO found in the starting develop tree.
+
+## Work and acceptance
+
+- [x] Audit application source and distinguish package attribution from identity.
+- [x] Prepare personal title/metadata, browser homepage/bookmarks, terminal greeting,
+      bundled Welcome text and desktop shortcuts, preserving original package author.
+- [x] Check script syntax, diff whitespace, generated sitemap/RSS/robots URLs and Welcome shortcut target.
+- [ ] Run existing CI unit tests and production build. Local locked install succeeded with the documented OpenSSL option; local Jest ran with 18 passing tests, one Windows directory-path assertion failure and one suite blocked by sparse-checkout BrowserFS assets. Complete Linux CI remains required.
+- [ ] Recheck remote head, commit and safely push develop without rewriting history.
+- [ ] Verify exact commit's existing Pages build/deployment and live browser flows:
+      homepage/bookmarks, external GitHub link, Welcome document and saved session.
+- [ ] Record final SHA, workflow URL, checks, remaining limitations and scope coverage.
+
+The complete application directory was inspected for owner names, URLs, usernames,
+welcome content and contact defaults. Games, emulators, editors, media apps and
+libraries remain branded as their upstream applications. Runtime validation is
+focused on changed entrypoints; this is not an assertion that all games or remote
+services were exercised.
+
+Messenger has no verified personal Nostr address; its bundled author contact seed is now blank. Existing messages, keys and saved contacts are unchanged. No private email or full resume was added.
