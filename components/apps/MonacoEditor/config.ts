@@ -1,6 +1,8 @@
+import { BASE_PATH } from "utils/constants";
+
 export const config = {
   paths: {
-    vs: "/Program Files/MonacoEditor/vs",
+    vs: `${BASE_PATH}/Program Files/MonacoEditor/vs`,
   },
 };
 
