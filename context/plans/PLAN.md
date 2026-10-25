@@ -32,7 +32,7 @@ Updated 2026-10-25 UTC.
       bundled Welcome text and desktop shortcuts, preserving original package author.
 - [x] Check script syntax, diff whitespace, generated sitemap/RSS/robots URLs and Welcome shortcut target.
 - [ ] Run existing CI unit tests and production build. Local locked install succeeded with the documented OpenSSL option; local Jest ran with 18 passing tests, one Windows directory-path assertion failure and one suite blocked by sparse-checkout BrowserFS assets. Complete Linux CI remains required.
-- [ ] Recheck remote head, commit and safely push develop without rewriting history.
+- [x] Recheck remote head, commit and safely push develop without rewriting history.
 - [ ] Verify exact commit's existing Pages build/deployment and live browser flows:
       homepage/bookmarks, external GitHub link, Welcome document and saved session.
 - [ ] Record final SHA, workflow URL, checks, remaining limitations and scope coverage.
@@ -54,3 +54,5 @@ Initial personalization pushed as b7d9bde154f06310db98c573ebfe95b4daae02e8; Page
 CI run 40203143619 completed locked install and the full Linux unit suite successfully. Changed application sources pass targeted oxlint; formatting and script syntax checks pass. The browser follow-up will receive a new develop commit and its own exact-commit Pages verification.
 
 The first Pages deployment succeeded, but its browser acceptance check failed when opening Welcome: Monaco stayed on its loading screen. Its loader config used a root /Program Files path without the existing /daedalOS prefix. Repair that path, keep bundled editor behavior, and rerun exact-commit CI; do not treat the first deployment as fully verified.
+
+Independent source review found no blocking source/privacy issue. It caught a live-test assertion that read an early Welcome line after terminal scrolling; the final test uses the document tail instead. Full Linux unit tests also passed for source commit 3f1afc890297225d3861644c03048248c5d536f3. Embedding is verified visually only when real page content is visible; URL assignment alone is not proof.
