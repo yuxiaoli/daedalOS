@@ -10,3 +10,7 @@ trim_trailing_whitespace = true
 
 [.husky/*]
 end_of_line = lf
+
+[public/Users/Public/Documents/Welcome.txt]
+end_of_line = lf
+insert_final_newline = false
