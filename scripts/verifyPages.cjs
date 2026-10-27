@@ -1,4 +1,5 @@
 const assert = require("node:assert/strict");
+const { createHash } = require("node:crypto");
 const { existsSync } = require("node:fs");
 const { chromium } = require("playwright");
 
@@ -47,6 +48,32 @@ async function main() {
       `Published asset returned HTML: ${url}`
     );
   }
+
+  const welcomeUrl = new URL("Users/Public/Documents/Welcome.txt", baseUrl);
+  const welcomeSha256 =
+    "8cfade6f56f8046d1a2deae329e43d3f024095917d18dc11e436b095d9c9fb36";
+  let welcomeBytes;
+  for (let attempt = 0; attempt < 12; attempt += 1) {
+    const response = await fetch(welcomeUrl, { cache: "no-store" });
+    assert(response.ok, `Published welcome returned ${response.status}`);
+    welcomeBytes = Buffer.from(await response.arrayBuffer());
+    if (
+      createHash("sha256").update(welcomeBytes).digest("hex") === welcomeSha256
+    )
+      break;
+    await sleep(5000);
+  }
+  assert.equal(
+    welcomeBytes.length,
+    525,
+    "Published welcome byte length changed"
+  );
+  assert.equal(
+    createHash("sha256").update(welcomeBytes).digest("hex"),
+    welcomeSha256,
+    "Published welcome must match the approved UTF-8 bytes exactly"
+  );
+  const expectedWelcome = welcomeBytes.toString("utf8").replace(/\s/g, "");
 
   const chrome = process.env.CHROME_BIN;
   const browser = await chromium.launch({
@@ -100,11 +127,13 @@ async function main() {
     await desktop.getByLabel("Welcome", { exact: true }).dblclick();
     const welcomeEditor = page.locator('.monaco-editor[role="code"]');
     await welcomeEditor.waitFor();
-    await page.waitForFunction(() =>
-      document
-        .querySelector('.monaco-editor[role="code"]')
-        ?.textContent?.replace(/\s/g, "")
-        .includes("YUXIAOLI")
+    await page.waitForFunction(
+      (approvedWelcome) =>
+        document
+          .querySelector('.monaco-editor[role="code"]')
+          ?.textContent?.replace(/\s/g, "")
+          .includes(approvedWelcome),
+      expectedWelcome
     );
     await page.getByLabel("Close", { exact: true }).last().click();
 
@@ -239,13 +268,16 @@ async function main() {
           sha: expectedSha,
           url: baseUrl,
           assetsChecked: assets.length,
+          welcomeBytes: welcomeBytes.length,
+          welcomeSha256,
           browser: "Chromium; forced unavailable WebGL",
           checks: [
             "desktop",
             "Start",
             "My PC open/close",
             "personal metadata",
-            "Welcome shortcut opens text editor",
+            "exact approved welcome bytes over HTTP",
+            "Welcome shortcut opens the approved text in editor",
             "Vector Index browser homepage",
             "Vector Index external fallback",
             "GitHub bookmark opens externally",

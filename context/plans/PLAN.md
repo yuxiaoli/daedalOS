@@ -56,3 +56,51 @@ CI run 40203143619 completed locked install and the full Linux unit suite succes
 The first Pages deployment succeeded, but its browser acceptance check failed when opening Welcome: Monaco stayed on its loading screen. Its loader config used a root /Program Files path without the existing /daedalOS prefix. Repair that path, keep bundled editor behavior, and rerun exact-commit CI; do not treat the first deployment as fully verified.
 
 Independent source review found no blocking source/privacy issue. It caught a live-test assertion that read an early Welcome line after terminal scrolling; the final test uses the document tail instead. Full Linux unit tests also passed for source commit 3f1afc890297225d3861644c03048248c5d536f3. Embedding is verified visually only when real page content is visible; URL assignment alone is not proof.
+
+## Canonical welcome rollout — 2026-10-27
+
+Status: exact copy and noninteractive safety checks implemented on the feature branch; draft PR and parent review next.
+
+- Approved source: DOT_NOTES projects/repos/boot-loader/welcome.md at
+  bb681b8fd0085af3cc15ef02e6da1b955404e5ce.
+- Replace only the previous bundled public/Users/Public/Documents/Welcome.txt.
+  Preserve every approved word, six paragraphs and the Keep exploring URL.
+  Expected UTF-8 length: 525 bytes, no trailing newline; Git blob
+  fe7e9edba1d4cbbe07d44e43dea42bd5e3f234b7; SHA256
+  8cfade6f56f8046d1a2deae329e43d3f024095917d18dc11e436b095d9c9fb36.
+- Preserve edited, empty, deleted and renamed files through the existing writable
+  overlay. Do not migrate, reset, clear or reseed browser storage.
+- Keep MIT, Dustin Brett attribution and bundled credits on their existing separate
+  surfaces. Do not append them to the immutable welcome copy.
+- Existing default branch: develop. Latest remote/local develop baseline:
+  3c61852373934bdf327dadbbc5c6eaf4c9639149. Read-only main remains
+  0dae88ccb68ff50d269cc0f9266dcbb457b4cc20. No open PR or local changes found.
+- Working branch: feat/canonical-welcome-20261027, created from latest origin/develop.
+  Submit draft PR to develop; await the parent's substantive exact-head review,
+  then mark ready and merge normally when checks/protections permit. No direct
+  implementation push to develop and no main/master mutation or force push.
+- No control of the user's browser, CUA or device UI. Existing isolated automated
+  CI remains intact as clarified by the parent; manual rendered/device review is
+  left to Sean. Add noninteractive HTTP byte/revision checks and label coverage.
+
+Acceptance tasks:
+
+- [x] Pin and verify exact source/worktree/Git blob bytes without automatic EOL or
+      final-newline rewriting.
+- [x] Characterize existing overlay safety for edited, empty, deleted and renamed
+      notes; keep production storage code unchanged.
+- [x] Update the old welcome assertion in existing CI without removing other checks;
+      verify served Welcome.txt bytes and exact deployed revision by HTTP.
+- [ ] Run appropriate source tests/build checks, create draft PR and provide head SHA,
+      diff and actual results for independent parent review.
+- [ ] After review, ready/ordinary merge; verify merged develop deployment and exact
+      public bytes; report source, PR, merge, CI and remaining verification limits.
+
+The previous personalization rollout completed at develop 3c61852 on 2026-10-25
+with 22 passing Linux tests and successful Pages run 40205290966. Earlier entries
+above retain their historical in-progress snapshots; this section is the active
+rollout plan.
+
+Rollout checks (2026-10-27): the exact-byte test failed on the former 1049-byte working copy, then passed on the approved 525-byte file and Git blob fe7e9edb. Eight targeted tests pass: exact bytes plus seven real bundled HTTPRequest/OverlayFS remount cases with retained InMemory upper storage and deletion-log fencing. Isolated TypeScript checking of the new tests, targeted oxlint, script syntax and diff whitespace checks pass. The full Windows Jest run has 29 passing tests and the same pre-existing wallpaper Albums-path assertion failure; that test and production wallpaper/storage code are unchanged. Real IndexedDB reopen/durability and manual/device appearance are not covered by these tests.
+
+The large local public-asset materialization stalled and was canceled without source loss; only the small bundled BrowserFS files were fetched for real backend testing. No local production-build success is claimed. Existing develop-only Linux CI will run its complete unit/build/isolated acceptance suite on the merged commit; no PR-triggered workflow or check result is invented. The existing workflow, license, CREDITS and production filesystem implementation are unchanged.
