@@ -9,7 +9,7 @@ const fixtureUrl = "https://welcome-persistence.invalid/";
 const bundlePath = path.resolve("public/System/BrowserFS/browserfs.min.js");
 const canonicalWelcome = readFileSync(
   path.resolve("public/Users/Public/Documents/Welcome.txt"),
-  "utf8",
+  "utf8"
 );
 const oldWelcome = "previous bundled welcome";
 const editedWelcome = "USER NOTES: preserve exact bytes\nUnicode: café 世界\n";
@@ -54,7 +54,7 @@ async function mount(page, welcome) {
     });
     lower.preloadFile(
       "/Users/Public/Documents/Welcome.txt",
-      bfs.BFSRequire("buffer").Buffer.from(text),
+      bfs.BFSRequire("buffer").Buffer.from(text)
     );
     const overlay = await create(bfs.FileSystem.OverlayFS, {
       readable: lower,
@@ -76,6 +76,7 @@ async function mount(page, welcome) {
       });
     window.welcomeHarness = {
       read: (name) => call(fs, "readFile", name, "utf8"),
+      readUpper: (name) => call(upperFs, "readFile", name, "utf8"),
       write: (name, value) => call(fs, "writeFile", name, value, { flag: "w" }),
       rename: (from, to) => call(fs, "rename", from, to),
       remove: (name) => call(fs, "unlink", name),
@@ -93,7 +94,7 @@ async function mount(page, welcome) {
     };
     return upper.getName();
   }, welcome);
-  expect(backend).toBe("IndexedDB");
+  expect(backend).toBe("IndexedDB - welcome-persistence-test");
 }
 
 async function read(page, name = welcomePath) {
@@ -136,15 +137,25 @@ for (const [label, saved] of [
     await mount(page, oldWelcome);
     await page.evaluate(
       ([file, value]) => window.welcomeHarness.write(file, value),
-      [welcomePath, saved],
+      [welcomePath, saved]
     );
+    // A separate upper-store read observes committed bytes before closing;
+    // the bundle's write callback alone is not a transaction-complete signal.
+    await expect
+      .poll(() =>
+        page.evaluate(
+          (file) => window.welcomeHarness.readUpper(file),
+          welcomePath
+        )
+      )
+      .toBe(saved);
     const reopened = await reopen(context, page, canonicalWelcome);
     expect(await read(reopened)).toBe(saved);
     expect(
       await reopened.evaluate(
         (file) => window.welcomeHarness.size(file),
-        welcomePath,
-      ),
+        welcomePath
+      )
     ).toBe(Buffer.byteLength(saved));
   });
 }
@@ -159,7 +170,7 @@ for (const mode of ["pristine", "edited"]) {
       if (mode === "edited") {
         await page.evaluate(
           ([file, text]) => window.welcomeHarness.write(file, text),
-          [welcomePath, editedWelcome],
+          [welcomePath, editedWelcome]
         );
       }
       await page.evaluate(
@@ -167,18 +178,18 @@ for (const mode of ["pristine", "edited"]) {
           operation === "rename"
             ? window.welcomeHarness.rename(from, to)
             : window.welcomeHarness.remove(from),
-        [action, welcomePath, renamedPath],
+        [action, welcomePath, renamedPath]
       );
       await waitForTombstone(page);
       const reopened = await reopen(context, page, canonicalWelcome);
       expect(
         await reopened.evaluate(
           (file) => window.welcomeHarness.exists(file),
-          welcomePath,
-        ),
+          welcomePath
+        )
       ).toBe(false);
       expect(
-        await reopened.evaluate(() => window.welcomeHarness.list()),
+        await reopened.evaluate(() => window.welcomeHarness.list())
       ).not.toContain("Welcome.txt");
       const missingCode = await reopened.evaluate(async (file) => {
         try {
@@ -191,7 +202,7 @@ for (const mode of ["pristine", "edited"]) {
       expect(missingCode).toBe("ENOENT");
       if (action === "rename") {
         expect(await read(reopened, renamedPath)).toBe(
-          mode === "edited" ? editedWelcome : oldWelcome,
+          mode === "edited" ? editedWelcome : oldWelcome
         );
       }
     });
