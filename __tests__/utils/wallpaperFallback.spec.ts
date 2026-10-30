@@ -10,6 +10,16 @@ const preloadImage = jest.fn<
   ReturnType<typeof UtilsFunctions.preloadImage>,
   Parameters<typeof UtilsFunctions.preloadImage>
 >();
+const disposeImage = jest.fn();
+const loadSlideshowImage = jest.fn<
+  Promise<{ dispose: () => void; url: string } | undefined>,
+  [string]
+>((entry: string) =>
+  Promise.resolve({
+    dispose: disposeImage,
+    url: entry.startsWith("/") ? "blob:wallpaper-image" : entry,
+  })
+);
 const setWallpaper = jest.fn<void, [name: string]>();
 const fsActions = {
   exists: jest.fn<Promise<boolean>, [path: string]>(),
@@ -113,6 +123,10 @@ describe("slideshow fallback on GitHub Pages", () => {
           fitImageToDecodeLimit,
           preloadImage,
         }));
+        jest.doMock<{ loadSlideshowImage: typeof loadSlideshowImage }>(
+          "utils/slideshow",
+          () => ({ loadSlideshowImage })
+        );
         ({ default: useWallpaper } =
           await import("components/system/Desktop/Wallpapers/useWallpaper"));
       });
@@ -144,10 +158,11 @@ describe("slideshow fallback on GitHub Pages", () => {
     jest.dontMock("contexts/session");
     jest.dontMock("styled-components");
     jest.dontMock("utils/functions");
+    jest.dontMock("utils/slideshow");
     document.documentElement.removeAttribute("style");
   });
 
-  it("populates an empty shipped playlist from Pictures and prefixes its asset URL", async () => {
+  it("populates an empty playlist with portable virtual paths and resolves the image", async () => {
     const album = `${PICTURES}/Albums`;
     const image = `${album}/photo.jpg`;
 
@@ -174,9 +189,13 @@ describe("slideshow fallback on GitHub Pages", () => {
       PICTURES,
       "slideshow.json"
     );
-    const assetUrl = `${window.location.origin}/daedalOS${image}`;
+    const assetUrl = "blob:wallpaper-image";
 
-    expect(fitImageToDecodeLimit).toHaveBeenCalledWith(assetUrl);
+    expect(loadSlideshowImage).toHaveBeenCalledWith(
+      image,
+      fsActions.readFile,
+      expect.any(AbortSignal)
+    );
     expect(
       document.documentElement.style.getPropertyValue("--before-background")
     ).toContain(`url(${assetUrl})`);
@@ -210,21 +229,71 @@ describe("slideshow fallback on GitHub Pages", () => {
       "https://images.example.test/wallpaper.jpg",
       "https://images.example.test/wallpaper.jpg",
     ],
-    [
-      "/daedalOS/Users/Public/Pictures/photo.jpg",
-      `${window.location.origin}/daedalOS/Users/Public/Pictures/photo.jpg`,
-    ],
+    ["/daedalOS/Users/Public/Pictures/photo.jpg", "blob:wallpaper-image"],
   ])("preserves a configured slideshow URL %s", async (image, assetUrl) => {
     fsActions.readFile.mockResolvedValue(Buffer.from(JSON.stringify([image])));
 
     await mountDesktop();
 
-    expect(fitImageToDecodeLimit).toHaveBeenCalledWith(assetUrl);
+    expect(loadSlideshowImage).toHaveBeenCalledWith(
+      image,
+      fsActions.readFile,
+      expect.any(AbortSignal)
+    );
     expect(
       document.documentElement.style.getPropertyValue("--before-background")
     ).toContain(`url(${assetUrl})`);
     expect(fsActions.readdir).not.toHaveBeenCalled();
     expect(fsActions.writeFile).not.toHaveBeenCalled();
+    expect(setWallpaper).not.toHaveBeenCalled();
+  });
+
+  it("disposes visible slideshow images on unmount", async () => {
+    fsActions.readFile.mockResolvedValue(
+      Buffer.from(JSON.stringify(["/local.png"]))
+    );
+    await mountDesktop();
+    expect(disposeImage).not.toHaveBeenCalled();
+    await React.act(async () => {
+      root.render(undefined);
+      await Promise.resolve();
+    });
+    expect(disposeImage).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps both crossfade layers alive and releases a replaced layer", async () => {
+    fsActions.readFile.mockResolvedValue(
+      Buffer.from(JSON.stringify(["/local.png"]))
+    );
+    await mountDesktop();
+    await React.act(async () => {
+      await jest.advanceTimersByTimeAsync(15000);
+    });
+    expect(loadSlideshowImage).toHaveBeenCalledTimes(2);
+    expect(disposeImage).not.toHaveBeenCalled();
+    await React.act(async () => {
+      await jest.advanceTimersByTimeAsync(15000);
+    });
+    expect(loadSlideshowImage).toHaveBeenCalledTimes(3);
+    expect(disposeImage).toHaveBeenCalledTimes(1);
+    await React.act(async () => {
+      root.render(undefined);
+      await Promise.resolve();
+    });
+    expect(disposeImage).toHaveBeenCalledTimes(3);
+  });
+
+  it("skips missing entries without scheduling an endless retry", async () => {
+    fsActions.readFile.mockResolvedValue(
+      Buffer.from(JSON.stringify(["/missing.png"]))
+    );
+    loadSlideshowImage.mockResolvedValueOnce(undefined);
+    await mountDesktop();
+    await React.act(async () => {
+      await jest.advanceTimersByTimeAsync(60000);
+    });
+    expect(loadSlideshowImage).toHaveBeenCalledTimes(1);
+    expect(jest.getTimerCount()).toBe(0);
     expect(setWallpaper).not.toHaveBeenCalled();
   });
 });
