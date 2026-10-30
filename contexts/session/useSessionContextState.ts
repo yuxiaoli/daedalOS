@@ -62,6 +62,7 @@ const useSessionContextState = (): {
     useFileSystemActions();
   const rootFs = useRootFs();
   const [sessionLoaded, setSessionLoaded] = useState(false);
+  const [sessionWritable, setSessionWritable] = useState(false);
   const [foregroundId, setForegroundId] = useState("");
   const [stackOrder, setStackOrder] = useState<string[]>([]);
   const [themeName, setThemeName] = useState(DEFAULT_THEME);
@@ -217,10 +218,20 @@ const useSessionContextState = (): {
     },
     [readdir]
   );
-  const loadingDebounceRef = useRef(0);
+  useEffect(() => {
+    // Opening the gate must render again so changes made during boot are saved.
+    const timeout = sessionLoaded
+      ? window.setTimeout(() => {
+          setSessionWritable(true);
+          window.sessionIsWriteable = true;
+        }, TRANSITIONS_IN_MILLISECONDS.WINDOW * 2)
+      : 0;
+
+    return () => window.clearTimeout(timeout);
+  }, [sessionLoaded]);
 
   useEffect(() => {
-    if (!loadingDebounceRef.current && sessionLoaded && !haltSession) {
+    if (sessionWritable && sessionLoaded && !haltSession) {
       maybeRequestIdleCallback(() => {
         writeFile(
           SESSION_FILE,
@@ -255,6 +266,7 @@ const useSessionContextState = (): {
     recentFiles,
     runHistory,
     sessionLoaded,
+    sessionWritable,
     sortOrders,
     themeName,
     views,
@@ -410,11 +422,6 @@ const useSessionContextState = (): {
             deletePath(SESSION_FILE);
           }
         }
-
-        loadingDebounceRef.current = window.setTimeout(() => {
-          loadingDebounceRef.current = 0;
-          window.sessionIsWriteable = true;
-        }, TRANSITIONS_IN_MILLISECONDS.WINDOW * 2);
 
         setSessionLoaded(true);
       };

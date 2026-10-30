@@ -1,4 +1,4 @@
-import { join } from "path";
+import { posix } from "path";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useTheme } from "styled-components";
 import {
@@ -27,7 +27,6 @@ import {
 } from "contexts/session";
 import useWorker from "hooks/useWorker";
 import {
-  BASE_PATH,
   DEFAULT_WALLPAPER,
   IMAGE_FILE_EXTENSIONS,
   MILLISECONDS_IN_MINUTE,
@@ -52,6 +51,7 @@ import {
   parseBgPosition,
   preloadImage,
 } from "utils/functions";
+import { loadSlideshowImage, type SlideshowImage } from "utils/slideshow";
 
 let slideshowFiles: Record<string, string[]> = {};
 
@@ -76,6 +76,7 @@ const useWallpaper = (
   const wallpaperTimerRef = useRef(0);
   const wallpaperLoadAbortRef = useRef<AbortController>(undefined);
   const failedOffscreenContext = useRef(false);
+  const slideshowImagesRef = useRef<Record<string, SlideshowImage>>({});
   const resetWallpaper = useCallback(
     (keepCanvas?: boolean): void => {
       desktopRef.current?.querySelector(BASE_VIDEO_SELECTOR)?.remove();
@@ -293,7 +294,7 @@ const useWallpaper = (
     async (baseDirectory: string): Promise<string[]> =>
       (await readdir(baseDirectory)).reduce<Promise<string[]>>(
         async (images, entry) => {
-          const entryPath = join(baseDirectory, entry);
+          const entryPath = posix.join(baseDirectory, entry);
 
           return [
             ...(await images),
@@ -313,6 +314,8 @@ const useWallpaper = (
   );
   const loadFileWallpaper = useCallback(async () => {
     let loadController: AbortController | undefined;
+    let slideshowImage: SlideshowImage | undefined;
+    let slideshowEntry = "";
     let [, currentWallpaperUrl] =
       /url\((.*)\)/.exec(
         document.documentElement.style.getPropertyValue(
@@ -322,7 +325,12 @@ const useWallpaper = (
 
     currentWallpaperUrl = currentWallpaperUrl?.replace(/\\/g, "");
 
-    if (currentWallpaperUrl?.startsWith("blob:")) {
+    if (
+      currentWallpaperUrl?.startsWith("blob:") &&
+      !Object.values(slideshowImagesRef.current).some(
+        ({ url }) => url === currentWallpaperUrl
+      )
+    ) {
       cleanUpBufferUrl(currentWallpaperUrl);
     }
 
@@ -333,6 +341,9 @@ const useWallpaper = (
 
     if (isSlideshow) {
       resetWallpaper();
+      wallpaperLoadAbortRef.current?.abort();
+      loadController = new AbortController();
+      wallpaperLoadAbortRef.current = loadController;
 
       slideshowFiles = {
         [wallpaperImage]: slideshowFiles[wallpaperImage] || [],
@@ -357,27 +368,32 @@ const useWallpaper = (
         }
 
         slideshowFiles[wallpaperImage].push(
-          ...[...new Set(slides)]
-            .sort(() => Math.random() - 0.5)
-            .map((url) => {
-              if (!url.startsWith("/")) return url;
-
-              const assetPath =
-                BASE_PATH && !url.startsWith(`${BASE_PATH}/`)
-                  ? `${BASE_PATH}${url}`
-                  : url;
-
-              return `${window.location.origin}${assetPath}`;
-            })
+          ...[...new Set(slides)].sort(() => Math.random() - 0.5)
         );
       }
 
-      do {
-        wallpaperUrl = slideshowFiles[wallpaperImage].shift() || "";
-      } while (
-        currentWallpaperUrl === wallpaperUrl &&
-        slideshowFiles[wallpaperImage].length > 1
-      );
+      // Try each entry at most once. Missing files leave the last image intact
+      // (or an empty background on first load), without a retry/worker loop.
+      while (slideshowFiles[wallpaperImage].length > 0) {
+        const entry = slideshowFiles[wallpaperImage].shift() || "";
+
+        // Decode sequentially to bound memory and stop at the first usable image.
+        // eslint-disable-next-line no-await-in-loop
+        slideshowImage = await loadSlideshowImage(
+          entry,
+          readFile,
+          loadController.signal
+        );
+        if (loadController.signal.aborted) {
+          slideshowImage?.dispose();
+          return;
+        }
+        if (slideshowImage) {
+          wallpaperUrl = slideshowImage.url;
+          slideshowEntry = entry;
+          break;
+        }
+      }
 
       newWallpaperFit = "fill";
     } else if (wallpaperHandler[wallpaperName]) {
@@ -466,7 +482,10 @@ const useWallpaper = (
 
         if (isSlideshow) {
           try {
-            const { searchParams } = new URL(wallpaperUrl);
+            const { searchParams } = new URL(
+              slideshowEntry || wallpaperUrl,
+              window.location.origin
+            );
             const { x, y } = Object.fromEntries(searchParams.entries());
 
             positionSize = `${parseBgPosition(x)} ${parseBgPosition(y)} / cover`;
@@ -479,6 +498,17 @@ const useWallpaper = (
           const repeat = newWallpaperFit === "tile" ? "repeat" : "no-repeat";
           const isTopWindow = window === window.top;
           const isAfterNextBackground = isBeforeBg();
+          const backgroundSide = isAfterNextBackground ? "after" : "before";
+
+          if (slideshowImage) {
+            if (loadController?.signal.aborted) {
+              slideshowImage.dispose();
+              return;
+            }
+            // The opposite layer remains alive throughout the crossfade.
+            slideshowImagesRef.current[backgroundSide]?.dispose();
+            slideshowImagesRef.current[backgroundSide] = slideshowImage;
+          }
 
           document.documentElement.style.setProperty(
             "--background-transition-timing",
@@ -519,22 +549,19 @@ const useWallpaper = (
             () => applyWallpaper(fallbackBackground)
           );
         } else {
-          applyWallpaper(await fitImageToDecodeLimit(wallpaperUrl));
+          applyWallpaper(
+            slideshowImage
+              ? wallpaperUrl
+              : await fitImageToDecodeLimit(wallpaperUrl)
+          );
 
           if (isSlideshow) {
-            // Preload the next slide mid-interval, keeping it off initial load
-            wallpaperTimerRef.current = window.setTimeout(() => {
-              const [nextWallpaper] = slideshowFiles[wallpaperImage];
-
-              if (nextWallpaper) {
-                preloadImage(nextWallpaper, PRELOAD_ID, true, "auto");
-              }
-
-              wallpaperTimerRef.current = window.setTimeout(
-                loadFileWallpaper,
-                SLIDESHOW_TIMEOUT_IN_MILLISECONDS / 2
-              );
-            }, SLIDESHOW_TIMEOUT_IN_MILLISECONDS / 2);
+            // Resolve virtual paths only when displayed; never preload them
+            // as HTTP URLs or persist an ephemeral object URL.
+            wallpaperTimerRef.current = window.setTimeout(
+              loadFileWallpaper,
+              SLIDESHOW_TIMEOUT_IN_MILLISECONDS
+            );
           }
         }
       }
@@ -572,6 +599,14 @@ const useWallpaper = (
         loadWallpaper();
       }
     }
+    return () => {
+      wallpaperLoadAbortRef.current?.abort();
+      window.clearTimeout(wallpaperTimerRef.current);
+      Object.values(slideshowImagesRef.current).forEach(({ dispose }) =>
+        dispose()
+      );
+      slideshowImagesRef.current = {};
+    };
   }, [loadFileWallpaper, loadWallpaper, sessionLoaded, wallpaperName]);
 
   useEffect(() => {
