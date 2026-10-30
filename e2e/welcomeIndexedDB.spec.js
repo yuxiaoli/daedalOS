@@ -33,9 +33,12 @@ test.beforeEach(async ({ context }) => {
 
 async function mount(page, welcome) {
   await page.goto(fixtureUrl);
+  // The shipped bundle expects the app's process shim before evaluation.
+  await page.evaluate(() => { window.process = { cwd: () => '/' }; });
   await page.addScriptTag({ path: bundlePath });
   const backend = await page.evaluate(async (text) => {
     const bfs = window.BrowserFS;
+    window.Buffer = bfs.BFSRequire('buffer').Buffer;
     const create = (factory, options) =>
       new Promise((resolve, reject) => {
         factory.Create(options, (error, fs) => {
