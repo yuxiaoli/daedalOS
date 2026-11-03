@@ -114,7 +114,7 @@ const StatusBar: FC<ComponentProcessProps> = ({ id }) => {
                 onClick={async () => {
                   const [saveUrl, saveData] = getSaveFileInfo(url, editor);
 
-                  if (saveUrl && saveData) {
+                  if (saveUrl && typeof saveData === "string") {
                     await writeFile(saveUrl, saveData, true);
                     updateFolder(dirname(saveUrl), basename(saveUrl));
                     prependFileToTitle(basename(saveUrl));

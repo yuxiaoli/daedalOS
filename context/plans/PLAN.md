@@ -104,3 +104,35 @@ rollout plan.
 Rollout checks (2026-10-27): the exact-byte test failed on the former 1049-byte working copy, then passed on the approved 525-byte file and Git blob fe7e9edb. Eight targeted tests pass: exact bytes plus seven real bundled HTTPRequest/OverlayFS remount cases with retained InMemory upper storage and deletion-log fencing. Isolated TypeScript checking of the new tests, targeted oxlint, script syntax and diff whitespace checks pass. The full Windows Jest run has 29 passing tests and the same pre-existing wallpaper Albums-path assertion failure; that test and production wallpaper/storage code are unchanged. Real IndexedDB reopen/durability and manual/device appearance are not covered by these tests.
 
 The large local public-asset materialization stalled and was canceled without source loss; only the small bundled BrowserFS files were fetched for real backend testing. No local production-build success is claimed. Existing develop-only Linux CI will run its complete unit/build/isolated acceptance suite on the merged commit; no PR-triggered workflow or check result is invented. The existing workflow, license, CREDITS and production filesystem implementation are unchanged.
+
+## Save and slideshow repair - 2026-10-31
+
+Current authorized phase for UNKNOWN-20261029-014-DOT-20261029-015, based on
+develop e6bcfe2adc1cce71ad061c87451f3d2966832e59. Feature branch:
+feature/save-slideshow-persistence-20261031.
+
+- Fix the reproduced Save-button empty-string omission; preserve the canonical
+  Welcome bytes and existing user storage.
+- Keep slideshow playlist entries as virtual paths; read local/shipped virtual
+  files through BrowserFS, decode before displaying, bound failed loads, and
+  release object URLs on replacement, cancellation and unmount.
+- Use POSIX joins for browser virtual paths. The historical plan above identifies
+  the old Windows failure as the Albums-path assertion; re-run its original
+  source before calling that issue reproduced/resolved.
+- Add focused Save/resolver/hook tests and real-app persistent-profile integration.
+  Each run creates a new disposable profile; only that profile is removed.
+- Run relevant tests, lint/type/build checks, review the exact diff and follow
+  feature PR -> develop. Main/master are user-only and remain untouched.
+- Use the existing develop Pages deployment and verify the exact served commit
+  and real Save/slideshow/restart behavior. A source push is not delivery.
+- Record actual results and remaining platform limits in docs/ACCEPTANCE.md.
+
+## Local follow-up: early boot persistence
+
+The frozen commit `eb3a2d2dd4d42d87eca04c14e2864caf890efee6` and all failed receipts remain preserved. Publication was denied by automatic approval review; this follow-up is local only. Do not retry the upload, create a PR, merge or deploy without the required approval.
+
+- Replace the ref-only boot gate with reactive readiness so opening the gate saves the latest session, including wallpaper edits made during initialization.
+- Retain the existing delay, persisted session fields and halt/resume semantics; cancel the readiness timer on unmount.
+- Add hook regressions and a deterministic real-UI early-interaction restart case. Hold only the session-readiness timer in the disposable test page; keep its nonzero timer ID, let other startup work settle, select the slideshow before readiness, release the gate, then restart the full browser without another state-changing action.
+- Reproduce the failure against the preserved build before testing the repaired production build and the complete Save/slideshow integration matrix.
+- Produce a revised exact local commit, combined patch, source manifest and approval packet. Canonical Welcome, reserved main/master and real user profiles/settings remain unchanged.
