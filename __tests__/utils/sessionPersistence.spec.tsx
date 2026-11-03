@@ -13,6 +13,17 @@ const fsActions = {
   readFile: jest.fn<Promise<Buffer>, [string]>(),
   writeFile: jest.fn<Promise<boolean>, [string, string, boolean]>(),
 };
+// Shortcut parsing imports generated indexes unrelated to session persistence.
+jest.mock<{ getShortcutInfo: () => never }>(
+  "components/system/Files/FileEntry/functions",
+  () => ({
+    getShortcutInfo: () => {
+      throw new Error(
+        "Unexpected shortcut parsing in session persistence tests"
+      );
+    },
+  })
+);
 jest.mock<{
   useFileSystemActions: () => typeof fsActions;
   useRootFs: () => typeof rootFs;
