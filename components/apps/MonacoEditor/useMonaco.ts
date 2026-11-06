@@ -50,26 +50,6 @@ const useMonaco = ({
     },
     [monaco?.Uri, monaco?.editor]
   );
-  const createModel = useCallback(async () => {
-    const newModel = monaco?.editor.createModel(
-      (await readFile(url)).toString(),
-      detectLanguage(getExtension(url)),
-      createModelUri(url)
-    );
-
-    newModel?.onDidChangeContent(() => prependFileToTitle(basename(url), true));
-
-    return newModel as Monaco.editor.ITextModel;
-  }, [createModelUri, monaco?.editor, prependFileToTitle, readFile, url]);
-  const loadFile = useCallback(async () => {
-    if (monaco && editor && url.startsWith("/")) {
-      editor.getModel()?.dispose();
-      editor.setModel(await createModel());
-    }
-
-    prependFileToTitle(basename(url || DEFAULT_TEXT_FILE_SAVE_PATH));
-  }, [createModel, editor, monaco, prependFileToTitle, url]);
-
   useEffect(() => {
     if (!monaco) {
       shareGlobal("define", "MonacoEditor", 2.5 * MILLISECONDS_IN_SECOND);
@@ -137,10 +117,34 @@ const useMonaco = ({
 
   useEffect(() => {
     if (monaco && editor && url) {
+      let cancelled = false;
       editor.updateOptions({ ariaLabel: basename(url) });
-      loadFile();
+      const loadFile = async (): Promise<void> => {
+        if (url.startsWith("/")) {
+          editor.getModel()?.dispose();
+          const data = await readFile(url);
+          if (cancelled) return;
+          const model = monaco.editor.createModel(
+            data.toString(),
+            detectLanguage(getExtension(url)),
+            createModelUri(url)
+          );
+          model.onDidChangeContent(() =>
+            prependFileToTitle(basename(url), true)
+          );
+          editor.setModel(model);
+        }
+
+        prependFileToTitle(basename(url || DEFAULT_TEXT_FILE_SAVE_PATH));
+      };
+      void loadFile();
+
+      return () => {
+        cancelled = true;
+      };
     }
-  }, [editor, loadFile, monaco, url]);
+    return undefined;
+  }, [createModelUri, editor, monaco, prependFileToTitle, readFile, url]);
 };
 
 export default useMonaco;

@@ -1,0 +1,8 @@
+--- a/src/backend/OverlayFS.ts
++++ b/src/backend/OverlayFS.ts
+@@
+-                if (stats!.size === -1) {
+-                  stats!.size = data.length;
+-                }
++                stats!.size = data.length;
+                 const f = new OverlayFile(this, p, flag, stats!, data);
