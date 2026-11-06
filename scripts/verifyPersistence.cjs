@@ -28,6 +28,7 @@ const report = {
 const requests = [];
 let context,
   page,
+  currentFile,
   processIds = [];
 const record = (check, data) => {
   report.events.push({ time: new Date().toISOString(), check, data });
@@ -44,6 +45,27 @@ async function launch() {
       : {}),
     headless: true,
     viewport: { width: 1280, height: 900 },
+  });
+  // Capture the actual editor instances; getModels() can include stale models.
+  await context.addInitScript(() => {
+    let monaco;
+    Object.defineProperty(window, "monaco", {
+      configurable: true,
+      get: () => monaco,
+      set: (value) => {
+        monaco = value;
+        if (value?.editor?.create && !value.editor.create.__captured) {
+          const create = value.editor.create;
+          const wrapped = (...args) => {
+            const editor = create(...args);
+            (window.__testEditors ||= []).push(editor);
+            return editor;
+          };
+          wrapped.__captured = true;
+          value.editor.create = wrapped;
+        }
+      },
+    });
   });
   // Hold only the existing session-readiness timer on a dedicated test URL.
   // This makes the real UI interaction deterministic inside the 500ms boot window.
@@ -104,6 +126,7 @@ async function close() {
   );
 }
 async function openFile(file) {
+  currentFile = file;
   await page.goto(base + "/?app=MonacoEditor&url=" + encodeURIComponent(file), {
     waitUntil: "domcontentloaded",
   });
@@ -112,14 +135,34 @@ async function openFile(file) {
     .waitFor();
   await page.waitForFunction(
     (file) =>
-      window.monaco?.editor
-        .getModels()
-        .some((m) => m.uri.path.startsWith(file + "|")),
+      window.__testEditors?.some((editor) => {
+        const node = editor.getDomNode();
+        return (
+          node?.isConnected &&
+          node.getClientRects().length &&
+          node.closest('section[role="dialog"]') &&
+          editor.getModel()?.uri.path.startsWith(file + "|")
+        );
+      }),
     file
   );
 }
 const modelValue = () =>
-  page.evaluate(() => window.monaco.editor.getModels()[0].getValue());
+  page.evaluate(
+    (file) =>
+      window.__testEditors
+        ?.find((editor) => {
+          const node = editor.getDomNode();
+          return (
+            node?.isConnected &&
+            node.getClientRects().length &&
+            node.closest('section[role="dialog"]') &&
+            editor.getModel()?.uri.path.startsWith(file + "|")
+          );
+        })
+        ?.getValue(),
+    currentFile
+  );
 async function save() {
   await page.getByRole("button", { name: "Save", exact: true }).click();
   await expect(page.getByRole("dialog").last()).not.toHaveAttribute(
@@ -143,8 +186,19 @@ async function playlist(entries) {
   await openFile("/Users/Public/Pictures/slideshow.json");
   // Fixture setup only; the Save operation is always the real UI handler.
   await page.evaluate(
-    (value) => window.monaco.editor.getModels()[0].setValue(value),
-    JSON.stringify(entries)
+    ({ file, value }) =>
+      window.__testEditors
+        .find((editor) => {
+          const node = editor.getDomNode();
+          return (
+            node?.isConnected &&
+            node.getClientRects().length &&
+            node.closest('section[role="dialog"]') &&
+            editor.getModel()?.uri.path.startsWith(file + "|")
+          );
+        })
+        .setValue(value),
+    { file: currentFile, value: JSON.stringify(entries) }
   );
   await save();
   await page
@@ -265,11 +319,17 @@ async function visibleImage(check, expectedBytes) {
   try {
     await launch();
     await openFile("/Users/Public/Documents/Welcome.txt");
-    const original = await modelValue();
-    const publicBefore = await (
-      await context.request.get(base + "/Users/Public/Documents/Welcome.txt")
-    ).body();
-    assert.equal(original, publicBefore.toString("utf8"));
+    const publicResponse = await context.request.get(
+      base + "/Users/Public/Documents/Welcome.txt"
+    );
+    assert(publicResponse.ok(), "Public Welcome request must succeed");
+    const publicBefore = await publicResponse.body();
+    assert.equal(
+      createHash("sha256").update(publicBefore).digest("hex"),
+      "8cfade6f56f8046d1a2deae329e43d3f024095917d18dc11e436b095d9c9fb36"
+    );
+    const original = publicBefore.toString("utf8");
+    await expect.poll(modelValue, { timeout: 15000 }).toBe(original);
     record("baseline", {
       bytes: publicBefore.length,
       value: original,
@@ -287,7 +347,7 @@ async function visibleImage(check, expectedBytes) {
       await expect.poll(modelValue).toBe(value);
       await save();
       await reopenWelcome();
-      assert.equal(await modelValue(), value);
+      await expect.poll(modelValue).toBe(value);
       record("save-reopen", { value });
       await page.screenshot({
         path: path.join(output, value ? "save-nonempty.png" : "save-empty.png"),
@@ -295,7 +355,7 @@ async function visibleImage(check, expectedBytes) {
       await close();
       await launch();
       await openFile("/Users/Public/Documents/Welcome.txt");
-      assert.equal(await modelValue(), value);
+      await expect.poll(modelValue).toBe(value);
       record("save-process-restart", { value });
       await page.screenshot({
         path: path.join(
@@ -304,11 +364,22 @@ async function visibleImage(check, expectedBytes) {
         ),
       });
     }
-    await page.evaluate((value) => {
-      const model = window.monaco.editor.getModels()[0];
-      model.setValue(value);
-      model.setEOL(0);
-    }, original);
+    await page.evaluate(
+      ({ file, value }) => {
+        const editor = window.__testEditors.find((item) => {
+          const node = item.getDomNode();
+          return (
+            node?.isConnected &&
+            node.getClientRects().length &&
+            node.closest('section[role="dialog"]') &&
+            item.getModel()?.uri.path.startsWith(file + "|")
+          );
+        });
+        editor.setValue(value);
+        editor.getModel().setEOL(0);
+      },
+      { file: currentFile, value: original }
+    );
     await save();
     assert.equal(await modelValue(), original);
 
